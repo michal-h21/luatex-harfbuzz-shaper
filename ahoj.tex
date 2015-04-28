@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage{luacode}
+\usepackage{luatexbase}
+\directlua{
+fl = require "fontloader.lua"
+}
+\font\ahoj= {TeX Gyre Termes}  at 12pt
+
+\begin{document}
+\ahoj Nazdar světe grafika
+\begin{luacode*}
+  local options = fontloader.options
+  print(font.fonts[font.current()].backmap)
+  fl.make_nodes("grafika řeřicha", font.current(), 16, fl.options)
+\end{luacode*}
+
+další text
+
+\font\siddhanta={Siddhanta} at 12pt
+\bigskip
+
+\siddhanta 
+
+Normal devanagari shaping: ॥ धर्मो रक्षति रक्षितः ॥
+
+and with harfbuzz: 
+\begin{luacode*}
+  local options = fl.options
+fl.make_nodes("॥ धर्मो रक्षति रक्षितः ॥",font.current(), 0, options)
+\end{luacode*}
+\end{document}
