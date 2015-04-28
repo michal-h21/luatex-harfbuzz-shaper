@@ -10,4 +10,4 @@ to directory with this library. In order to run example file, `ahoj.tex`, you ne
 
 ## About
 
-This is just proof of concept, 
+This is just a proof of concept,
