@@ -1,9 +1,9 @@
 \documentclass{article}
 \usepackage{luacode}
 \usepackage{luatexbase}
-\directlua{
-fl = require "fontloader.lua"
-}
+\begin{luacode*}
+fl = require "hf_fontload"
+\end{luacode*}
 \font\ahoj= {TeX Gyre Termes}  at 12pt
 
 \begin{document}
