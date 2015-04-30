@@ -120,4 +120,38 @@ M.write_nodes = function(nodetable)
     node.write(n)
   end
 end
+
+M.process_nodes = function(head) 
+  local newhead
+  local current_text = {}
+  local current_node 
+  -- 
+  local build_text = function() 
+    if #current_text > 0 then
+      local text = table.concat(current_text)
+    end
+    -- reset current_text
+    current_text = {}
+  end
+  for n in node.traverse(head) do
+    current_node = n
+    if n.id ==37 then
+      -- test for hypothetical situation that in list of succeeding glyphs
+      -- are some glyphs with different font and lang
+      -- can this even happen?
+      if n.lang == current_text.lang and n.font == current_text.font then
+        current_text[#current_text + 1] = utfchar(n.char)
+      else
+        build_text()
+        current_text.font = n.font
+        current_text.lang = n.lang
+      end
+    elseif n.id == 0 or n.id == 1 then
+      -- hlist and vlist nodes
+      build_text()
+      n.head = M.process_nodes(n.head)
+      node.insert_after(newhead,n.prev,n)
+    else
+      build_text()
+    end
 return M
