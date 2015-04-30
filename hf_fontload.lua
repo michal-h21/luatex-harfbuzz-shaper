@@ -154,4 +154,6 @@ M.process_nodes = function(head)
     else
       build_text()
     end
+  end
+end
 return M
