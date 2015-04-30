@@ -4,14 +4,16 @@
 \begin{luacode*}
 fl = require "hf_fontload"
 \end{luacode*}
-\font\ahoj= {TeX Gyre Termes}  at 12pt
+\font\ahoj= {Fira Sans Book}  at 12pt
 
 \begin{document}
 \ahoj Nazdar světe grafika
 \begin{luacode*}
   local options = fontloader.options
   print(font.fonts[font.current()].backmap)
-  fl.make_nodes("grafika řeřicha", font.current(), 16, fl.options)
+  fl.write_nodes(
+    fl.make_nodes("grafika řeřicha", font.current(), 16, fl.options)
+  )
 \end{luacode*}
 
 další text
@@ -26,6 +28,8 @@ Normal devanagari shaping: ॥ धर्मो रक्षति रक्ष�
 and with harfbuzz: 
 \begin{luacode*}
   local options = fl.options
-fl.make_nodes("॥ धर्मो रक्षति रक्षितः ॥",font.current(), 0, options)
+fl.write_nodes(
+  fl.make_nodes("॥ धर्मो रक्षति रक्षितः ॥",font.current(), 0, options)
+ )
 \end{luacode*}
 \end{document}

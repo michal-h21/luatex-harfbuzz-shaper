@@ -101,14 +101,23 @@ M.make_nodes = function(text, fontid, language, options)
     harfbuzz._shape(text,face,options.script, options.direction,
       options.language, options.size, options.features)
   }
-  local codepoints = {}
+  local nodetable = {}
   for _, v in ipairs(result) do
     print("hf",v.name, utfchar(fontoptions.backmap[v.codepoint]))
     local n = node.new(37)
     n.font = fontid
     n.lang = language
     n.char = fontoptions.backmap[v.codepoint]
-    node.write(n)
+    --node.write(n)
+    nodetable[#nodetable+1] = node.copy(n)
   end--]]
+  return nodetable
+end
+
+M.write_nodes = function(nodetable)
+  for _, n in ipairs(nodetable) do
+    print("write")
+    node.write(n)
+  end
 end
 return M
