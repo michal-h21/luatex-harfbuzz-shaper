@@ -10,4 +10,19 @@ to directory with this library. In order to run example file, `ahoj.tex`, you ne
 
 ## About
 
-This is just a proof of concept,
+This is just a proof of concept of using Harfbuzz library with LuaLaTeX.
+Context and Luaotfload tries to do glyph shaping with Lua functions, but it is
+lot of really hard work and complex scripts such as Indic or Arabic doesn't
+seem to be supported fully. 
+
+## Questions and issues
+
+- harfbuzz does lookup only for system fonts, not fonts installed with TeX
+- does hyphenation work on ligatured words? can we get ligature components from
+  Harbuzz?
+- what about node attributes? 
+- how to support bidi? Is it better to use direction, or to build node lists by
+  hand? harfbuzz can return characters in correct order for RTL text
+- how to support complex scripts such as Arabic, where glyphs depends even on
+  things like line start/end, hyphenation, etc.?
+- how does Sile support OpenType features? I can't get it to work.
