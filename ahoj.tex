@@ -1,5 +1,5 @@
 \documentclass{article}
-\usepackage[czech,english]{babel}
+\usepackage[czech,greek,russian,english]{babel}
 \usepackage{luacode}
 \usepackage{luatexbase}
 \usepackage{microtype}
@@ -95,5 +95,28 @@ fl.options.script = "dflt"
 आपका
 आचार्य रामप्यारे सिंह शास्त्री
 
+\font\gentium={Gentium} at 12 pt
+% this tries to load bad font, error occurs
+%\selectlanguage{greek}
+\gentium
+\begin{luacode*}
+fl.options.script = "dflt"
+\end{luacode*}
+Επαγωγή στο 
+Βάση επαγωγής: Για 
+Επαγωγική υπόθεση: Υποθέτουμε ότι ισχύει για 
+Επαγωγικό βήμα: Θα δείξουμε ότ
+Επαγωγή στο
+Βάση επαγωγής: Για 
+
+\selectlanguage{russian}
+\gentium
+\begin{luacode*}
+fl.options.script = "cyrl"
+\end{luacode*}
+а также большинство неславянских языков народов СССР, некоторые из которых
+ранее имели другие системы письменности (на латинской, арабской или иной
+основе) и были переведены на кириллицу в конце 1930-х годов. Подробнее см.
+список языков с алфавитами на основе кириллицы.  
 
 \end{document}
