@@ -1,22 +1,36 @@
 \documentclass{article}
+\usepackage[czech,english]{babel}
 \usepackage{luacode}
 \usepackage{luatexbase}
+\usepackage{microtype}
+% to see what does hyphenation
+\textwidth=20em
+% polyglossia doesn't work. it calls fontspec
+%\usepackage{polyglossia}
 \begin{luacode*}
 fl = require "hf_fontload"
 \end{luacode*}
-\font\ahoj= {Fira Sans Book}  at 12pt
+\font\ahoj= {TeX Gyre Schola}  at 12pt
 
 \begin{document}
+\parindent=0pt
+\parskip=1em
+\selectlanguage{czech}
 \ahoj Nazdar světe grafika
 \begin{luacode*}
   local options = fontloader.options
   print(font.fonts[font.current()].backmap)
   fl.write_nodes(
-    fl.make_nodes("grafika řeřicha", font.current(), 16, fl.options)
+    fl.make_nodes("grafika řeřicha", {font=font.current(), lang=16}, fl.options)
   )
 \end{luacode*}
 
 další text
+
+% we don't have support for Devanagari with Babel. Polyglossia doesn't work
+% it loads Fontspec and it causess mass destruction. Or at least fatal error.
+\selectlanguage{english}
+\frenchspacing % two spaces after dot are horrible
 
 \font\siddhanta={Siddhanta} at 12pt
 \bigskip
@@ -29,7 +43,50 @@ and with harfbuzz:
 \begin{luacode*}
   local options = fl.options
 fl.write_nodes(
-  fl.make_nodes("॥ धर्मो रक्षति रक्षितः ॥",font.current(), 0, options)
+  fl.make_nodes("॥ धर्मो रक्षति रक्षितः ॥",{font = font.current(), lang=0}, options)
  )
 \end{luacode*}
+
+\ahoj
+
+\begin{luacode*}
+luatexbase.add_to_callback("pre_linebreak_filter",fl.process_nodes, "xxx")
+\end{luacode*}
+
+Now some examples with the node callback. All following texts were processed by
+Harfbuzz from TeX\ nodes: grafika graf\/ika žluva shelfful shelf\/ful
+
+
+\selectlanguage{czech}
+Nějaký text v češtině, zajímá mě, jak bude fungovat dělení slov, především ve
+slovech s diakritikou. Příliš žluťoučký kůň úpěl ďábelské ódy. 
+
+\selectlanguage{english}
+
+\font\amiri={Amiri} at 12pt
+\amiri
+\begin{luacode*}
+--fl.options.direction = "RTL"
+fl.options.script = "arab"
+\end{luacode*}
+Now some more hardcore example:
+
+
+الخط الأميري
+
+This should be ``Amiri Font'' in Arabic. (And as we can see -- TeX ligatures
+doesn't work either. These must be processed from Lua). But it doesn't work, as
+BIDI obviously isn't easy. Also, maybe we should process whole paragraph at
+once, not just words. But that would be difficult because we would loose non
+glyph nodes. This clearly needs help from a expert.
+
+So we can rather try some Devanagari:
+
+\begin{luacode*}
+--fl.options.direction = "RTL"
+fl.options.script = "deva"
+\end{luacode*}
+\siddhanta
+
+
 \end{document}
