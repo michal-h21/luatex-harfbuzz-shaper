@@ -6,7 +6,11 @@ You need to build SILE first, see the [instructions](https://github.com/simoncoz
 
     path to sile/core/justenoughharfbuzz.so
 
-to directory with this library. In order to run example file, `ahoj.tex`, you need to install [Siddhanta](http://svayambhava.blogspot.cz/p/siddhanta-devanagariunicode-open-type.html) typeface.
+to directory with this library. In order to run example file, `ahoj.tex`, you
+need to install
+[Siddhanta](http://svayambhava.blogspot.cz/p/siddhanta-devanagariunicode-open-type.html) 
+and [Amiri](http://www.amirifont.org/)
+typefaces.
 
 ## About
 
@@ -14,6 +18,9 @@ This is just a proof of concept of using Harfbuzz library with LuaLaTeX.
 Context and Luaotfload tries to do glyph shaping with Lua functions, but it is
 lot of really hard work and complex scripts such as Indic or Arabic doesn't
 seem to be supported fully. 
+
+Some simple node callback function, `hf_fontload.process_nodes`, is provided.
+See `ahoj.tex` for usage.
 
 ## Questions and issues
 
