@@ -88,10 +88,15 @@ luatexbase.add_to_callback("define_font",
   return f
   end, "custom fontloader")
 
-local utfchar =  unicode.utf8.char
--- fontid and language parameters are to make correct nodes
+local utfchar =  function(x)
+  print(x)
+  return unicode.utf8.char(x) or x
+end
+-- nodeoptions are options for glyph nodes
 -- options are for harfbuzz
-M.make_nodes = function(text, fontid, language, options)
+M.make_nodes = function(text, nodeoptions, options)
+  local nodeoptions = nodeoptions or {}
+  local fontid = nodeoptions.font
   -- cache used fonts
   local fontoptions = usedfonts[fontid] or font.fonts[fontid]
   usedfonts[fontid] = fontoptions
@@ -104,8 +109,12 @@ M.make_nodes = function(text, fontid, language, options)
   for _, v in ipairs(result) do
     print("hf",v.name, utfchar(fontoptions.backmap[v.codepoint]))
     local n = node.new(37)
-    n.font = fontid
-    n.lang = language
+    --n.font = fontid
+    --n.lang = language
+    -- set node properties
+    for k,v in pairs(nodeoptions) do
+      n[k] = v
+    end
     n.char = fontoptions.backmap[v.codepoint]
     --node.write(n)
     nodetable[#nodetable+1] = node.copy(n)
@@ -115,34 +124,30 @@ end
 
 M.write_nodes = function(nodetable)
   for _, n in ipairs(nodetable) do
-    print("write")
     node.write(n)
   end
 end
 
 M.process_nodes = function(head) 
-  print ("process", node.length(head))
   local newhead_table = {}
   local current_text = {}
-  local current_node 
+  local current_node = {}
   -- 
-  local insert_node = function(current_node)
-    newhead_table[#newhead_table + 1] = current_node
+  local insert_node = function(curr_node)
+    newhead_table[#newhead_table + 1] = curr_node
   end
   local build_text = function() 
-    print "build text"
     if #current_text > 0 then
       local text = table.concat(current_text)
-      print(text)
+      print("callback text",text)
     -- reset current_text
       --table.insert(newhead_table, M.make_nodes(text, current_text.font, current_text.lang,M.options))
-      insert_node(M.make_nodes(text, current_text.font, current_text.lang,M.options))
+      insert_node(M.make_nodes(text, {font = current_text.font, lang= current_text.lang},M.options))
     end
     current_text = {}
   end
   for n in node.traverse(head) do
     current_node = node.copy(n)
-    print(n.id)
     if n.id ==37 then
       -- test for hypothetical situation that in list of succeeding glyphs
       -- are some glyphs with different font and lang
@@ -182,20 +187,11 @@ M.process_nodes = function(head)
         if type(n) == "table" then
           process_newhead(n)
         else
-          if n.id == 37 then
-            print("real newhead", utfchar(n.char))
-          end
           node.insert_after(newhead, node.tail(newhead), n)
         end
       end
     end
     process_newhead(newhead_table)
-    for n in node.traverse(newhead) do 
-      print(n.id) 
-      if n.id == 37 then
-        print("newhead", utfchar(n.char))
-      end
-    end
     return newhead
   end
   return head
