@@ -1,6 +1,5 @@
 local M =  {}
 local harfbuzz = require "justenoughharfbuzz"
-
 local usedfonts = {}
 
 M.options = {font =  "TeX Gyre Termes", weight = 200,script = "", direction = "LTR", language = "en", size = 10, features = "+liga", variant = "normal"}
@@ -122,38 +121,83 @@ M.write_nodes = function(nodetable)
 end
 
 M.process_nodes = function(head) 
-  local newhead
+  print ("process", node.length(head))
+  local newhead_table = {}
   local current_text = {}
   local current_node 
   -- 
+  local insert_node = function(current_node)
+    newhead_table[#newhead_table + 1] = current_node
+  end
   local build_text = function() 
+    print "build text"
     if #current_text > 0 then
       local text = table.concat(current_text)
-    end
+      print(text)
     -- reset current_text
+      --table.insert(newhead_table, M.make_nodes(text, current_text.font, current_text.lang,M.options))
+      insert_node(M.make_nodes(text, current_text.font, current_text.lang,M.options))
+    end
     current_text = {}
   end
   for n in node.traverse(head) do
-    current_node = n
+    current_node = node.copy(n)
+    print(n.id)
     if n.id ==37 then
       -- test for hypothetical situation that in list of succeeding glyphs
       -- are some glyphs with different font and lang
       -- can this even happen?
-      if n.lang == current_text.lang and n.font == current_text.font then
-        current_text[#current_text + 1] = utfchar(n.char)
+      if n.lang == current_text.lang and n.font == current_text.font and n.attribute == current_text.attribute then
       else
         build_text()
         current_text.font = n.font
         current_text.lang = n.lang
+        current_text.attribute = n.attribute
       end
+      current_text[#current_text + 1] = utfchar(n.char)
     elseif n.id == 0 or n.id == 1 then
       -- hlist and vlist nodes
       build_text()
-      n.head = M.process_nodes(n.head)
-      node.insert_after(newhead,n.prev,n)
+      insert_node(M.process_nodes(n.head))
+      --n.head = M.process_nodes(n.head)
+      -- node.insert_after(newhead,n.prev,n)
     else
       build_text()
+      insert_node(n)
     end
   end
+  build_text()
+  -- make new node list from newhead_table
+  if #newhead_table > 0 then
+    -- process it only when we have any nodes
+    -- new head of returned node list
+    local newhead = newhead_table[1]
+    -- we don't need first node anymore
+    table.remove(newhead_table,1)
+    local function process_newhead(nodes)
+      -- process table with nodes and insert them to a new node list
+      for _, n in ipairs(nodes) do
+        -- if n is table, it contains glyph nodes which needs to be 
+        -- inserted to the node list
+        if type(n) == "table" then
+          process_newhead(n)
+        else
+          if n.id == 37 then
+            print("real newhead", utfchar(n.char))
+          end
+          node.insert_after(newhead, node.tail(newhead), n)
+        end
+      end
+    end
+    process_newhead(newhead_table)
+    for n in node.traverse(newhead) do 
+      print(n.id) 
+      if n.id == 37 then
+        print("newhead", utfchar(n.char))
+      end
+    end
+    return newhead
+  end
+  return head
 end
 return M
