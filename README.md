@@ -33,3 +33,5 @@ See `ahoj.tex` for usage.
 - how to support complex scripts such as Arabic, where glyphs depends even on
   things like line start/end, hyphenation, etc.?
 - how does Sile support OpenType features? I can't get it to work.
+- math isn't working, as well as hboxes and probably many other things. Did I
+  say this is a proof of concept?
