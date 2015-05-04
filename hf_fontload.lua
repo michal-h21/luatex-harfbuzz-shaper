@@ -7,6 +7,11 @@ M.options = {font =  "TeX Gyre Termes", weight = 200,script = "", direction = "L
 -- http://wiki.luatex.org/index.php/Use_a_TrueType_font
 luatexbase.add_to_callback("define_font",
   function(name, size)
+    if kpse.find_file(name,"tfm") then
+      return font.read_tfm(name,size)
+    elseif kpse.find_file(name,"vf") then
+      return font.read_vf(name,size)
+    end
     local fonttype, f
     local options = M.options--{font = name}
     options.font = name
