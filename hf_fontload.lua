@@ -193,12 +193,12 @@ M.process_nodes = function(head,groupcode)
     elseif n.id == 0 or n.id == 1 then
       -- hlist and vlist nodes
       build_text()
-      local hlist = M.process_nodes(n.head,"")
-      print("hlist", node.length(hlist))
-      for xxx in node.traverse(hlist) do
-        print("ch hlist", xxx.id)
-      end
-      n.head = hlist
+      -- local hlist = M.process_nodes(n.head,"")
+      -- print("hlist", node.length(hlist))
+      -- for xxx in node.traverse(hlist) do
+      --   print("ch hlist", xxx.id)
+      -- end
+      -- n.head = hlist
       insert_node(n)
       --n.head = M.process_nodes(n.head)
       -- node.insert_after(newhead,n.prev,n)
@@ -210,28 +210,34 @@ M.process_nodes = function(head,groupcode)
   build_text()
   -- make new node list from newhead_table
   if #newhead_table > 0 then
-    local newhead = newhead_table[1]
-    local function process_newhead(nodes)
+    -- local newhead = newhead_table[1]
+    local newhead
+    local function process_newhead(nodes, newhead)
+      local newhead = newhead
       -- process table with nodes and insert them to a new node list
       for _, n in ipairs(nodes) do
         -- if n is table, it contains glyph nodes which needs to be 
         -- inserted to the node list
         if type(n) == "table" then
-          process_newhead(n)
+          print "newhead table"
+          newhead = process_newhead(n,newhead)
         else
-          node.insert_after(newhead, node.tail(newhead), n)
+          if not newhead then 
+            print("No newhead", type(n))
+            newhead = n
+          else
+            print("node insert")
+            node.insert_after(newhead, node.tail(newhead), n)
+          end
         end
       end
+      return newhead
     end
     -- process it only when we have any nodes
     -- new head of returned node list
-    if type(newhead) == "table" then
-      print "newhead table"
-      newhead = process_newhead(newhead)
-    end
     -- we don't need first node anymore
-    table.remove(newhead_table,1)
-    process_newhead(newhead_table)
+    -- table.remove(newhead_table,1)
+    newhead = process_newhead(newhead_table)
     print "return newhead"
     return newhead
   end
