@@ -1,0 +1,21 @@
+\ProvidesPackage{harfbuzz}
+\RequirePackage{luacode,luatexbase}
+
+\begin{luacode*}
+  luaharfbuzz = require "hf_fontload"
+\end{luacode*}
+
+\newcommand\startharfbuzz{%
+%\begin{luacode*}
+\luaexec{luatexbase.add_to_callback("pre_linebreak_filter",luaharfbuzz.process_nodes, "harfbuzz")}
+%\end{luacode*}%
+}
+
+\newcommand\stopharfbuzz{%
+%\begin{luacode*}
+\luaexec{%
+  luatexbase.remove_from_callback("pre_linebreak_filter","harfbuzz")
+}
+%\end{luacode*}%
+}
+\endinput
