@@ -92,15 +92,20 @@ local utfchar =  function(x)
   print(x)
   return unicode.utf8.char(x) or x
 end
+
+-- helper function to get font options and font face
+local get_font_options = function(fontid)
+  local fontoptions = usedfonts[fontid] or font.fonts[fontid]
+  usedfonts[fontid] = fontoptions
+  local face = fontoptions.face
+  return fontoptions,face
+end
 -- nodeoptions are options for glyph nodes
 -- options are for harfbuzz
 M.make_nodes = function(text, nodeoptions, options)
   local nodeoptions = nodeoptions or {}
   local fontid = nodeoptions.font
-  -- cache used fonts
-  local fontoptions = usedfonts[fontid] or font.fonts[fontid]
-  usedfonts[fontid] = fontoptions
-  local face = fontoptions.face
+  local fontoptions, face = get_font_options(fontid)
   if not face then return {} end
   local result = {
     harfbuzz._shape(text,face,options.script, options.direction,
@@ -150,17 +155,24 @@ M.process_nodes = function(head)
   for n in node.traverse(head) do
     current_node = node.copy(n)
     if n.id ==37 then
-      -- test for hypothetical situation that in list of succeeding glyphs
-      -- are some glyphs with different font and lang
-      -- can this even happen?
-      if n.lang == current_text.lang and n.font == current_text.font and n.attribute == current_text.attribute then
+      local _,face = get_font_options(n.font)
+      -- process only fonts loaded by Harfbuzz
+      if face then
+        -- test for hypothetical situation that in list of succeeding glyphs
+        -- are some glyphs with different font and lang
+        -- can this even happen?
+        if n.lang == current_text.lang and n.font == current_text.font and n.attribute == current_text.attribute then
+        else
+          build_text()
+          current_text.font = n.font
+          current_text.lang = n.lang
+          current_text.attribute = n.attribute
+        end
+        current_text[#current_text + 1] = utfchar(n.char)
       else
         build_text()
-        current_text.font = n.font
-        current_text.lang = n.lang
-        current_text.attribute = n.attribute
+        insert_node(n)
       end
-      current_text[#current_text + 1] = utfchar(n.char)
     elseif n.id == 0 or n.id == 1 then
       -- hlist and vlist nodes
       build_text()
