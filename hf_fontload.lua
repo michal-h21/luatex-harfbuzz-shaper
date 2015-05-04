@@ -7,6 +7,8 @@ M.options = {font =  "TeX Gyre Termes", weight = 200,script = "", direction = "L
 -- http://wiki.luatex.org/index.php/Use_a_TrueType_font
 luatexbase.add_to_callback("define_font",
   function(name, size)
+    -- first detect whether the font is tfm or vf file. harfbuzz always loads
+    -- some fallback font, so we must filter them in advance
     if kpse.find_file(name,"tfm") then
       return font.read_tfm(name,size)
     elseif kpse.find_file(name,"vf") then
@@ -88,6 +90,8 @@ luatexbase.add_to_callback("define_font",
           version = 1 }
       end
     else
+      -- this can't happen in reality, because some OpenType font is always
+      -- loaded at this point 
       f = font.read_tfm(name, size)
     end
   return f
@@ -139,11 +143,19 @@ M.write_nodes = function(nodetable)
   end
 end
 
-M.process_nodes = function(head) 
+-- process_nodes callback can be called multiple times on the same head,
+-- we should allow the processing only for some cases, which are enabled in
+-- processed_groupcodes table
+-- process only main vertical list by default
+M.processed_groupcodes = {[""]=true}
+M.process_nodes = function(head,groupcode) 
   local newhead_table = {}
   local current_text = {}
   local current_node = {}
-  -- 
+  local proc_groupcodes = M.processed_groupcodes
+  if not proc_groupcodes[groupcode] then
+    return head
+  end
   local insert_node = function(curr_node)
     newhead_table[#newhead_table + 1] = curr_node
   end
@@ -181,7 +193,13 @@ M.process_nodes = function(head)
     elseif n.id == 0 or n.id == 1 then
       -- hlist and vlist nodes
       build_text()
-      insert_node(M.process_nodes(n.head))
+      local hlist = M.process_nodes(n.head,"")
+      print("hlist", node.length(hlist))
+      for xxx in node.traverse(hlist) do
+        print("ch hlist", xxx.id)
+      end
+      n.head = hlist
+      insert_node(n)
       --n.head = M.process_nodes(n.head)
       -- node.insert_after(newhead,n.prev,n)
     else
@@ -192,11 +210,7 @@ M.process_nodes = function(head)
   build_text()
   -- make new node list from newhead_table
   if #newhead_table > 0 then
-    -- process it only when we have any nodes
-    -- new head of returned node list
     local newhead = newhead_table[1]
-    -- we don't need first node anymore
-    table.remove(newhead_table,1)
     local function process_newhead(nodes)
       -- process table with nodes and insert them to a new node list
       for _, n in ipairs(nodes) do
@@ -209,7 +223,16 @@ M.process_nodes = function(head)
         end
       end
     end
+    -- process it only when we have any nodes
+    -- new head of returned node list
+    if type(newhead) == "table" then
+      print "newhead table"
+      newhead = process_newhead(newhead)
+    end
+    -- we don't need first node anymore
+    table.remove(newhead_table,1)
     process_newhead(newhead_table)
+    print "return newhead"
     return newhead
   end
   return head
