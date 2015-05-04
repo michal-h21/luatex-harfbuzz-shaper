@@ -101,6 +101,7 @@ M.make_nodes = function(text, nodeoptions, options)
   local fontoptions = usedfonts[fontid] or font.fonts[fontid]
   usedfonts[fontid] = fontoptions
   local face = fontoptions.face
+  if not face then return {} end
   local result = {
     harfbuzz._shape(text,face,options.script, options.direction,
       options.language, options.size, options.features)
