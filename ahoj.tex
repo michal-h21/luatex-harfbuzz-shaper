@@ -5,27 +5,28 @@
 \usepackage{microtype}
 % to see what does hyphenation
 \textwidth=20em
+\usepackage{harfbuzz}
 % polyglossia doesn't work. it calls fontspec
 %\usepackage{polyglossia}
-\begin{luacode*}
-fl = require "hf_fontload"
-\end{luacode*}
+% \begin{luacode*}
+% fl = require "hf_fontload"
+% \end{luacode*}
 \font\ahoj= {TeX Gyre Schola}  at 12pt
 
 \begin{document}
 \parindent=0pt
 \parskip=1em
-\selectlanguage{czech}
-\ahoj Nazdar světe grafika
-\begin{luacode*}
-  local options = fontloader.options
-  print(font.fonts[font.current()].backmap)
-  fl.write_nodes(
-    fl.make_nodes("grafika řeřicha", {font=font.current(), lang=16}, fl.options)
-  )
-\end{luacode*}
-
-další text
+%  \selectlanguage{czech}
+%  \ahoj Nazdar světe grafika
+%  \begin{luacode*}
+%    local options = fontloader.options
+%    print(font.fonts[font.current()].backmap)
+%    fl.write_nodes(
+%      fl.make_nodes("grafika řeřicha", {font=font.current(), lang=16}, fl.options)
+%    )
+%  \end{luacode*}
+%  
+%  další text
 
 % we don't have support for Devanagari with Babel. Polyglossia doesn't work
 % it loads Fontspec and it causess mass destruction. Or at least fatal error.
@@ -37,21 +38,28 @@ další text
 
 \siddhanta 
 
-Normal devanagari shaping: ॥ धर्मो रक्षति रक्षितः ॥
+Normal devanagari shaping: 
+
+॥ धर्मो रक्षति रक्षितः ॥
+
+\startharfbuzz
 
 and with harfbuzz: 
-\begin{luacode*}
-  local options = fl.options
-fl.write_nodes(
-  fl.make_nodes("॥ धर्मो रक्षति रक्षितः ॥",{font = font.current(), lang=0}, options)
- )
-\end{luacode*}
+
+
+॥ धर्मो रक्षति रक्षितः ॥
+%  \begin{luacode*}
+%    local options = fl.options
+%  fl.write_nodes(
+%    fl.make_nodes("॥ धर्मो रक्षति रक्षितः ॥",{font = font.current(), lang=0}, options)
+%   )
+%  \end{luacode*}
 
 \ahoj
 
-\begin{luacode*}
-luatexbase.add_to_callback("pre_linebreak_filter",fl.process_nodes, "xxx")
-\end{luacode*}
+% \begin{luacode*}
+% luatexbase.add_to_callback("pre_linebreak_filter",fl.process_nodes, "xxx")
+% \end{luacode*}
 
 Now some examples with the node callback. All following texts were processed by
 Harfbuzz from TeX\ nodes: grafika graf\/ika žluva shelfful shelf\/ful
@@ -65,14 +73,20 @@ slovech s diakritikou. Příliš žluťoučký kůň úpěl ďábelské ódy.
 
 \font\amiri={Amiri} at 12pt
 \amiri
-\begin{luacode*}
---fl.options.direction = "RTL"
-fl.options.script = "arab"
-\end{luacode*}
+%  \begin{luacode*}
+%  --fl.options.direction = "RTL"
+%  fl.options.script = "arab"
+%  \end{luacode*}
 Now some more hardcore example:
 
+\SetFontOption{script}{arab}
+\SetFontOption{direction}{RTL}
 
 الخط الأميري
+
+\ahoj
+\SetFontOption{script}{latn}
+\SetFontOption{direction}{LTR}
 
 This should be ``Amiri Font'' in Arabic. (And as we can see -- TeX ligatures
 doesn't work either. These must be processed from Lua). But it doesn't work, as
@@ -83,9 +97,9 @@ glyph nodes. This clearly needs help from a expert.
 \siddhanta
 So we can rather try some Devanagari, the text is copied from a comment on http://svayambhava.\-blogspot.com\-/p\--/\-sidd\-hanta-\-deva\-na\-ga\-ri\-unicode-\-open\-type.html
 
-\begin{luacode*}
-fl.options.script = "dflt"
-\end{luacode*}
+%  \begin{luacode*}
+%  fl.options.script = "dflt"
+%  \end{luacode*}
 
 महोदय,
 मैं भी काशी के संपूर्णानन्द संस्कृत विश्वविद्यालय से हूँ। आप भी काशी में रहे हैं।
@@ -97,11 +111,11 @@ fl.options.script = "dflt"
 
 \font\gentium={Gentium} at 12 pt
 % this tries to load bad font, error occurs
-%\selectlanguage{greek}
+\selectlanguage{greek}
 \gentium
-\begin{luacode*}
-fl.options.script = "dflt"
-\end{luacode*}
+%  \begin{luacode*}
+%  fl.options.script = "dflt"
+%  \end{luacode*}
 Επαγωγή στο 
 Βάση επαγωγής: Για 
 Επαγωγική υπόθεση: Υποθέτουμε ότι ισχύει για 
@@ -111,9 +125,11 @@ fl.options.script = "dflt"
 
 \selectlanguage{russian}
 \gentium
-\begin{luacode*}
-fl.options.script = "cyrl"
-\end{luacode*}
+%  \begin{luacode*}
+%  fl.options.script = "cyrl"
+%  \end{luacode*}
+
+\SetFontOption{script}{cyrl}
 а также большинство неславянских языков народов СССР, некоторые из которых
 ранее имели другие системы письменности (на латинской, арабской или иной
 основе) и были переведены на кириллицу в конце 1930-х годов. Подробнее см.
