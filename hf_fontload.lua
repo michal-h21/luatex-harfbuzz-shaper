@@ -122,7 +122,8 @@ M.make_nodes = function(text, nodeoptions, options)
   }
   local nodetable = {}
   for _, v in ipairs(result) do
-    print("hf",v.name, utfchar(fontoptions.backmap[v.codepoint]))
+    -- character from backmap is sometimes too big for unicode.utf8.char
+    print("hf",v.name) -- , utfchar(fontoptions.backmap[v.codepoint]))
     local n = node.new(37)
     --n.font = fontid
     --n.lang = language
@@ -152,10 +153,10 @@ M.process_nodes = function(head,groupcode)
   local newhead_table = {}
   local current_text = {}
   local current_node = {}
-  local proc_groupcodes = M.processed_groupcodes
-  if not proc_groupcodes[groupcode] then
-    return head
-  end
+  -- local proc_groupcodes = M.processed_groupcodes
+  -- if not proc_groupcodes[groupcode] then
+  --   return head
+  -- end
   local insert_node = function(curr_node)
     newhead_table[#newhead_table + 1] = curr_node
   end
@@ -193,8 +194,9 @@ M.process_nodes = function(head,groupcode)
     elseif n.id == 0 or n.id == 1 then
       -- hlist and vlist nodes
       build_text()
+      -- So apparently hlist processing sometimes ends in a loop
       -- local hlist = M.process_nodes(n.head,"")
-      -- print("hlist", node.length(hlist))
+      -- -- print("hlist", node.length(hlist))
       -- for xxx in node.traverse(hlist) do
       --   print("ch hlist", xxx.id)
       -- end
@@ -223,10 +225,10 @@ M.process_nodes = function(head,groupcode)
           newhead = process_newhead(n,newhead)
         else
           if not newhead then 
-            print("No newhead", type(n))
+            print("No newhead", n.id)
             newhead = n
           else
-            print("node insert")
+            print("node insert",n.id)
             node.insert_after(newhead, node.tail(newhead), n)
           end
         end
