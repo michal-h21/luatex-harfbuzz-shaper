@@ -27,7 +27,8 @@
 
 \newcommand\SetFontOption[2]{%
   \luaexec{%
-    luaharfbuzz.options["\luatexluaescapestring{#1}"]="\luatexluaescapestring{#2}"
+    % luaharfbuzz.options["\luatexluaescapestring{#1}"]="\luatexluaescapestrya"ing{#2}"
+    luaharfbuzz.set_font_option("\luatexluaescapestring{#1}", "\luatexluaescapestring{#2}")
   }
 }
 

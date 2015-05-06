@@ -34,6 +34,7 @@ luatexbase.add_to_callback("define_font",
         f = { }
         f.name = ttffont.fontname
         f.face = hbfont.face
+        f.options = options
         f.fullname = ttffont.names[1].names.fullname
         f.parameters = { }
         f.designsize = size
@@ -103,20 +104,30 @@ local utfchar =  function(x)
 end
 
 -- helper function to get font options and font face
-M.get_font_options = function(fontid)
+M.get_font = function(fontid)
   local fontoptions = usedfonts[fontid] or font.fonts[fontid]
   usedfonts[fontid] = fontoptions
   local face = fontoptions.face
   return fontoptions,face
 end
 
+local current_options = nil
 -- set Harfbuzz options for a font
-M.set_option = function(fontid, name, value)
-  local fontoptions,_ = M.get_font_options(fontid) or {}
-  local options = fontoptions.options or {}
-  options[name] = value
-  fontoptions.options = options
-  usedfonts[fontid] = options
+M.set_font_option = function(name, value)
+  current_options = current_options or {}
+  current_options[name] = value
+end
+
+local save_options = function(fontid)
+  if current_options then
+    local current_font = M.get_font(fontid)
+    local options = current_font.options or {}
+    for k,v in pairs(current_options) do
+      options[k] = v
+    end
+    current_options = nil
+    current_font.options = options
+  end
 end
 
 
@@ -125,8 +136,9 @@ end
 M.make_nodes = function(text, nodeoptions, options)
   local nodeoptions = nodeoptions or {}
   local fontid = nodeoptions.font
-  local fontoptions, face = M.get_font_options(fontid)
+  local fontoptions, face = M.get_font(fontid)
   if not face then return {} end
+  for k,v in pairs(options) do print("option",k,v) end;
   local result = {
     harfbuzz._shape(text,face,options.script, options.direction,
       options.language, options.size, options.features)
@@ -179,14 +191,17 @@ M.process_nodes = function(head,groupcode)
       print("callback text",text)
     -- reset current_text
       --table.insert(newhead_table, M.make_nodes(text, current_text.font, current_text.lang,M.options))
-      insert_node(M.make_nodes(text, {font = current_text.font, lang= current_text.lang},M.options))
+      local current_font = current_text.font
+      local options = M.get_font(current_font).options
+      insert_node(M.make_nodes(text, {font = current_font, lang= current_text.lang},options))
     end
     current_text = {}
   end
   for n in node.traverse(head) do
     current_node = node.copy(n)
     if n.id ==37 then
-      local _,face = M.get_font_options(n.font)
+      save_options(n.font)
+      local _,face = M.get_font(n.font)
       -- process only fonts loaded by Harfbuzz
       if face then
         -- test for hypothetical situation that in list of succeeding glyphs
