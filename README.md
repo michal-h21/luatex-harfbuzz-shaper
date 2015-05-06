@@ -16,11 +16,51 @@ typefaces.
 
 This is just a proof of concept of using Harfbuzz library with LuaLaTeX.
 Context and Luaotfload tries to do glyph shaping with Lua functions, but it is
-lot of really hard work and complex scripts such as Indic or Arabic doesn't
+lot of really hard work and complex scripts such as Arabic doesn't
 seem to be supported fully. 
 
-Some simple node callback function, `hf_fontload.process_nodes`, is provided.
-See `ahoj.tex` for usage.
+## Usage
+    
+    \documentclass{article}
+    
+    \usepackage{harfbuzz}
+    \begin{document}
+    
+    \startharfbuzz
+    
+    
+    \font\libertine={Linux Libertine O} at 12pt
+    \libertine
+    \SetFontOption{features}{}
+    Normal text with Libertine: finance, grafika, 2015, 1/2
+    
+    \SetFontOption{features}{+zero}
+    
+    Zero: 2015
+    
+    \SetFontOption{features}{+onum,+dlig,+hist,+swsh}
+    Oldstyle: 2015
+    
+    
+    \SetFontOption{features}{+frac}
+    Fractions: 1/2, 1/4
+    
+    \SetFontOption{features}{+smcp}
+    
+    Hello world
+
+    \end{document}
+
+![Resulting document](http://i.imgur.com/74U0JNn.png?1)
+
+Fonts are loaded Plain TeX way, with `\font\fontname= {System font name} at
+size`. Classical `Type1` fonts are supported, but without any text shaping,
+obviously. To enable text shaping, use `\startharfbuzz`, to stop it, use
+`\stopharfbuzz`.
+
+You can set harfbuzz options with `\SetFontOption`, most useful options are
+`features`, `script` and `language`. All values must be valid OpenType names.
+
 
 ## Questions and issues
 
