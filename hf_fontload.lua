@@ -103,18 +103,29 @@ local utfchar =  function(x)
 end
 
 -- helper function to get font options and font face
-local get_font_options = function(fontid)
+M.get_font_options = function(fontid)
   local fontoptions = usedfonts[fontid] or font.fonts[fontid]
   usedfonts[fontid] = fontoptions
   local face = fontoptions.face
   return fontoptions,face
 end
--- nodeoptions are options for glyph nodes
+
+-- set Harfbuzz options for a font
+M.set_option = function(fontid, name, value)
+  local fontoptions,_ = M.get_font_options(fontid) or {}
+  local options = fontoptions.options or {}
+  options[name] = value
+  fontoptions.options = options
+  usedfonts[fontid] = options
+end
+
+
+  -- nodeoptions are options for glyph nodes
 -- options are for harfbuzz
 M.make_nodes = function(text, nodeoptions, options)
   local nodeoptions = nodeoptions or {}
   local fontid = nodeoptions.font
-  local fontoptions, face = get_font_options(fontid)
+  local fontoptions, face = M.get_font_options(fontid)
   if not face then return {} end
   local result = {
     harfbuzz._shape(text,face,options.script, options.direction,
@@ -144,10 +155,12 @@ M.write_nodes = function(nodetable)
   end
 end
 
+
 -- process_nodes callback can be called multiple times on the same head,
 -- we should allow the processing only for some cases, which are enabled in
 -- processed_groupcodes table
 -- process only main vertical list by default
+-- (we don't use this currently, because of problems with hlists)
 M.processed_groupcodes = {[""]=true}
 M.process_nodes = function(head,groupcode) 
   local newhead_table = {}
@@ -173,7 +186,7 @@ M.process_nodes = function(head,groupcode)
   for n in node.traverse(head) do
     current_node = node.copy(n)
     if n.id ==37 then
-      local _,face = get_font_options(n.font)
+      local _,face = M.get_font_options(n.font)
       -- process only fonts loaded by Harfbuzz
       if face then
         -- test for hypothetical situation that in list of succeeding glyphs
