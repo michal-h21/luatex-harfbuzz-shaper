@@ -99,7 +99,7 @@ luatexbase.add_to_callback("define_font",
   end, "custom fontloader")
 
 local utfchar =  function(x)
-  print(x)
+  -- print(x)
   return unicode.utf8.char(x) or x
 end
 
@@ -138,7 +138,7 @@ M.make_nodes = function(text, nodeoptions, options)
   local fontid = nodeoptions.font
   local fontoptions, face = M.get_font(fontid)
   if not face then return {} end
-  for k,v in pairs(options) do print("option",k,v) end;
+  -- for k,v in pairs(options) do print("option",k,v) end;
   local result = {
     harfbuzz._shape(text,face,options.script, options.direction,
       options.language, options.size, options.features)
@@ -146,7 +146,7 @@ M.make_nodes = function(text, nodeoptions, options)
   local nodetable = {}
   for _, v in ipairs(result) do
     -- character from backmap is sometimes too big for unicode.utf8.char
-    print("hf",v.name) -- , utfchar(fontoptions.backmap[v.codepoint]))
+    -- print("hf",v.name) -- , utfchar(fontoptions.backmap[v.codepoint]))
     local n = node.new(37)
     --n.font = fontid
     --n.lang = language
@@ -188,7 +188,7 @@ M.process_nodes = function(head,groupcode)
   local build_text = function() 
     if #current_text > 0 then
       local text = table.concat(current_text)
-      print("callback text",text)
+      -- print("callback text",text)
     -- reset current_text
       --table.insert(newhead_table, M.make_nodes(text, current_text.font, current_text.lang,M.options))
       local current_font = current_text.font
@@ -249,14 +249,14 @@ M.process_nodes = function(head,groupcode)
         -- if n is table, it contains glyph nodes which needs to be 
         -- inserted to the node list
         if type(n) == "table" then
-          print "newhead table"
+          -- print "newhead table"
           newhead = process_newhead(n,newhead)
         else
           if not newhead then 
-            print("No newhead", n.id)
+            -- print("No newhead", n.id)
             newhead = n
           else
-            print("node insert",n.id)
+            -- print("node insert",n.id)
             node.insert_after(newhead, node.tail(newhead), n)
           end
         end
@@ -268,7 +268,7 @@ M.process_nodes = function(head,groupcode)
     -- we don't need first node anymore
     -- table.remove(newhead_table,1)
     newhead = process_newhead(newhead_table)
-    print "return newhead"
+    -- print "return newhead"
     return newhead
   end
   return head
