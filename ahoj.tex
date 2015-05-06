@@ -80,9 +80,15 @@ slovech s diakritikou. Příliš žluťoučký kůň úpěl ďábelské ódy.
 Now some more hardcore example:
 
 \SetFontOption{script}{arab}
-\SetFontOption{direction}{RTL}
+\SetFontOption{language}{ARA}
+%\SetFontOption{direction}{RTL}
+\bgroup
+\luatextextdir TRT
+\luatexpardir TRT
 
-الخط الأميري
+ الخط الأميري {\luatextextdir TLT hello}
+
+\egroup
 
 \ahoj
 \SetFontOption{script}{latn}
