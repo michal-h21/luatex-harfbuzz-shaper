@@ -44,6 +44,9 @@ luatexbase.add_to_callback("pre_linebreak_filter",mirror, "mirror")
   \begin{document}
 \arab 
 \startharfbuzz
+\SetFontOption{script}{arab}
+\SetFontOption{language}{ARA}
+
 \luatextextdir TRT
 \luatexpardir TRT
 
