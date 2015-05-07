@@ -61,6 +61,10 @@ obviously. To enable text shaping, use `\startharfbuzz`, to stop it, use
 You can set harfbuzz options with `\SetFontOption`, most useful options are
 `features`, `script` and `language`. All values must be valid OpenType names.
 
+Results of `examples/scripts.tex`:
+
+![Complex scripts](http://i.imgur.com/mvxGNYJ.png)
+
 
 ## Questions and issues
 

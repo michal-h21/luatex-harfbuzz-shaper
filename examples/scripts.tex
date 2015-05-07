@@ -1,0 +1,47 @@
+\documentclass{article}
+
+\usepackage{harfbuzz}
+%\usepackage{mirror}
+
+\font\arab={Scheherazade} at 12pt
+\newcommand\textlatin[1]{\bgroup\luatextextdir TLT #1\egroup}
+
+  \begin{document}
+\arab 
+
+Normal LuaTeX handling of Arabic (without Fontspec):
+
+\luatextextdir TRT
+\luatexpardir TRT
+
+براغ (بالتشيكية: \textlatin{Praha}، براها) هي عاصمة جمهورية التشيك وأكبر مدنها. تقع على نهر فلتافا في وسط منطقة بوهيميا التاريخية. بخلاف الكثير من مدن أوروبا الوسطى لم تدمر المدينة بشكل كبير في الحرب العالمية الثانية وحافظت على شكلها الجميل. يبلغ عدد سكان المدينة \textlatin{1.2} مليون نسمة وتصل مساحتها حوالي \textlatin{500} كم\textlatin{2.}
+
+\startharfbuzz
+
+{\luatexpardir TLT\textlatin{And with Harfbuzz}}
+
+براغ (بالتشيكية: \textlatin{Praha}، براها) هي عاصمة جمهورية التشيك وأكبر مدنها. تقع على نهر فلتافا في وسط منطقة بوهيميا التاريخية. بخلاف الكثير من مدن أوروبا الوسطى لم تدمر المدينة بشكل كبير في الحرب العالمية الثانية وحافظت على شكلها الجميل. يبلغ عدد سكان المدينة \textlatin{1.2} مليون نسمة وتصل مساحتها حوالي \textlatin{500} كم\textlatin{2.}
+
+
+\font\siddhanta={Siddhanta} at 12pt
+\bigskip
+
+\siddhanta 
+
+\stopharfbuzz
+\luatextextdir TLT
+\luatexpardir TLT
+
+Normal devanagari shaping: 
+
+॥ धर्मो रक्षति रक्षितः ॥
+
+\startharfbuzz
+
+and with harfbuzz: 
+
+
+॥ धर्मो रक्षति रक्षितः ॥
+
+\end{document}
+
