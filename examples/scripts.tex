@@ -3,26 +3,29 @@
 \usepackage{harfbuzz}
 %\usepackage{mirror}
 
+\font\latin= {TeX Gyre Schola} at 12 pt
+
 % #1 script name #2 sample text
+
 \newcommand\sampletext[2]{%
 \stopharfbuzz%
 {\luatextextdir TLT%
   \luatexpardir TLT%
-  \par\noindent#1 without Harfbuzz}\par
+  \par\noindent\latin{#1 without Harfbuzz}}\par
 #2\par
 \startharfbuzz%
 {\luatextextdir TLT%
   \luatexpardir TLT%
-  \par\noindent#1 with Harfbuzz}\par
+  \par\noindent\latin#1 with Harfbuzz}\par
 #2\par%
 }
-\font\arab={Scheherazade} at 12pt
 \newcommand\textlatin[1]{\bgroup\luatextextdir TLT #1\egroup}
 
   \begin{document}
+\font\arab={Scheherazade} at 12pt
 \arab 
-\startharfbuzz
-
+  \startharfbuzz
+%  
 \SetFontOption{language}{ARA}
 \luatextextdir TRT
 \luatexpardir TRT
@@ -33,10 +36,16 @@
 
 \sampletext{Urdu}{پراگ (\textlatin{Prague}) چیک جمہوریہ کا دارالحکومت اور سیاسی، اقتصادی، تجارتی اور تعلیمی مرکز ہے۔ یہچیک جمہوریہ کا سب سے بڑا شہر بھی ہے۔ وسطی بوہیمیا میں دریائے ولتواوا کے کنارے واقع یہ شہر تقریبا \textlatin{12} لاکھ آبادی کا حامل ہے۔}
 
-\font\ezra={Ezra Sil} at 12pt
+%\font\amiri={Amiri} at 12pt
+%\amiri
+%\SetFontOption{language}{PAS}
+
+\sampletext{Pashtu}{پراگ ( په چیکی کې:\textlatin{Praha} ) د چېک د جمهوریت پایتخت دی او د چېک تر ټولو لوی ښار دی. مساحت یی تقریبا ۵۰۰ کیلومتره مربع ده. په اوس وخت کې پراگ تقریبا ۱،۲ میلیونه نفوس لری. پراگ هم د چېک جمهوریت ثقافتی او سیاسی مرکز دی. په پراگ کې د چېک جمهوریت تر ټولو لوی هوایی اډه پرته ده. د پراگ د ترافیک ترانسپورت ډیر عصری دی.}
+
+\font\ezra={Ezra Sil} at 10pt
 \ezra
-\SetFontOption{script}{hebr}
-\SetFontOption{language}{he}
+%\SetFontOption{script}{hebr}
+\SetFontOption{language}{IWR}
 
 \sampletext{Hebrew}{פראג )בצ'כית: \textlatin{Praha,} להאזנה )מידע · עזרה(( היא
   בירת הרפובליקה הצ'כית והעיר הגדולה ביותר בה. פראג מהווה את המרכז הכלכלי,
@@ -50,14 +59,26 @@
 \bigskip
 
 \siddhanta 
+%  
+ \luatextextdir TLT
+ \luatexpardir TLT
+ \SetFontOption{language}{HIN}
+ \SetFontOption{script}{}
 
-\luatextextdir TLT
-\luatexpardir TLT
-\SetFontOption{language}{dflt}
-\SetFontOption{script}{deva}
+\sampletext{Hindi}{%
+मुक्त ज्ञानकोश विकिपीडिया से
+}
 
-\sampletext{Devanagari}{%
-॥ धर्मो रक्षति रक्षितः ॥
+
+\font\lohit={Lohit Tamil} at 12pt
+\lohit
+
+\font\heros={TeX Gyre Heros} at 10pt
+
+\newcommand\heroslatin[1]{\textlatin{\heros #1}}
+
+\sampletext{Tamil}{%
+பிராகா (\heroslatin{Prague}, பிராக், செக் மொழி: \heroslatin{Praha}, பிராஹா), செக் குடியரசின் தலைநகரமும், மிகப்பெரிய நகரமும், முக்கியமான வர்த்தக நகரமும் பண்பாட்டு நகரமும் ஆகும். இந்நகரம் வழியாக வில்தாவா ஆறு பாய்கிறது. பிராகா மாநகரில் \heroslatin{1.2} மில்லியன் மக்கள் வசிக்கிறார்கள். \heroslatin{1992} முதல் இந்நகரம் யுனெஸ்கோவின் உலக பாரம்பரியக் களங்களின் பட்டியலில் உள்ளது.
 }
 
 \end{document}
