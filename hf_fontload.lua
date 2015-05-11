@@ -172,16 +172,15 @@ end
 -- we should allow the processing only for some cases, which are enabled in
 -- processed_groupcodes table
 -- process only main vertical list by default
--- (we don't use this currently, because of problems with hlists)
 M.processed_groupcodes = {[""]=true}
 M.process_nodes = function(head,groupcode) 
   local newhead_table = {}
   local current_text = {}
   local current_node = {}
-  -- local proc_groupcodes = M.processed_groupcodes
-  -- if not proc_groupcodes[groupcode] then
-  --   return head
-  -- end
+  local proc_groupcodes = M.processed_groupcodes
+  if not proc_groupcodes[groupcode] then
+    return head
+  end
   local insert_node = function(curr_node)
     newhead_table[#newhead_table + 1] = curr_node
   end
@@ -222,16 +221,10 @@ M.process_nodes = function(head,groupcode)
     elseif n.id == 0 or n.id == 1 then
       -- hlist and vlist nodes
       build_text()
-      -- So apparently hlist processing sometimes ends in a loop
-      -- local hlist = M.process_nodes(n.head,"")
-      -- -- print("hlist", node.length(hlist))
-      -- for xxx in node.traverse(hlist) do
-      --   print("ch hlist", xxx.id)
-      -- end
-      -- n.head = hlist
-      insert_node(n)
-      --n.head = M.process_nodes(n.head)
-      -- node.insert_after(newhead,n.prev,n)
+      local newhead = M.process_nodes(n.head,"")
+      local newhlist = node.copy(n)
+      newhlist.head = newhead
+      insert_node(newhlist)
     else
       build_text()
       insert_node(n)
