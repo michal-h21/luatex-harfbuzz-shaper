@@ -75,7 +75,6 @@ Results of `examples/scripts.tex`:
 - how to support bidi? Is it better to use direction, or to build node lists by
   hand? harfbuzz can return characters in correct order for RTL text
 - how to support complex scripts such as Arabic, where glyphs depends even on
-  things like line start/end, hyphenation, etc.?
-- how does Sile support OpenType features? I can't get it to work.
-- hboxes sometimes aren't processd with shaper, because of a bug which causes
-  infinite loop. Did I say this is a proof of concept?
+  things like line start/end, hyphenation, etc.? 
+- why some fonts fail completely? For example Gentium with OpenType features,
+  or Amiri for Arabic
