@@ -94,11 +94,9 @@ Now some more hardcore example:
 \SetFontOption{script}{latn}
 \SetFontOption{direction}{LTR}
 
-This should be ``Amiri Font'' in Arabic. (And as we can see -- TeX ligatures
-doesn't work either. These must be processed from Lua). But it doesn't work, as
-BIDI obviously isn't easy. Also, maybe we should process whole paragraph at
-once, not just words. But that would be difficult because we would loose non
-glyph nodes. This clearly needs help from a expert.
+This is  Arabic text with ``Scheherazade''font. (as we can see -- TeX ligatures
+don't work. These must be processed separately from Lua callbacks). 
+It works with this font, but fails with ``Amiri''. 
 
 \siddhanta
 So we can rather try some Devanagari, the text is copied from a comment on http://svayambhava.\-blogspot.com\-/p\--/\-sidd\-hanta-\-deva\-na\-ga\-ri\-unicode-\-open\-type.html
