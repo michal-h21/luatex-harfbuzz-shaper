@@ -151,8 +151,8 @@ M.make_nodes = function(text, nodeoptions, options)
     --n.font = fontid
     --n.lang = language
     -- set node properties
-    for k,v in pairs(nodeoptions) do
-      n[k] = v
+    for k,j in pairs(nodeoptions) do
+      n[k] = j
     end
     n.char = fontoptions.backmap[v.codepoint]
     --node.write(n)
