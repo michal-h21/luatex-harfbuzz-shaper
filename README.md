@@ -78,3 +78,14 @@ Results of `examples/scripts.tex`:
   things like line start/end, hyphenation, etc.? 
 - why some fonts fail completely? For example Gentium with OpenType features,
   or Amiri for Arabic
+- `pdffonts` command reports this error message on `examples/scripts.pdf`:
+
+    $ Syntax Error (103800): Dictionary key must be a name object
+    Syntax Error (103834): Dictionary key must be a name object
+    Syntax Error (103858): Dictionary key must be a name object
+    Syntax Error (104209): Dictionary key must be a name object
+    Syntax Error (104241): Dictionary key must be a name object
+    Syntax Error (104253): Dictionary key must be a name object
+
+
+  I have no idea what it means
