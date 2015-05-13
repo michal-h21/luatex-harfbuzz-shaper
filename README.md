@@ -68,12 +68,9 @@ Results of `examples/scripts.tex`:
 
 ## Questions and issues
 
-- harfbuzz does lookup only for system fonts, not fonts installed with TeX
 - does hyphenation work on ligatured words? can we get ligature components from
   Harbuzz?
 - what about node attributes? 
-- how to support bidi? Is it better to use direction, or to build node lists by
-  hand? harfbuzz can return characters in correct order for RTL text
 - how to support complex scripts such as Arabic, where glyphs depends even on
   things like line start/end, hyphenation, etc.? 
 - why some fonts fail completely? For example Gentium with OpenType features,
