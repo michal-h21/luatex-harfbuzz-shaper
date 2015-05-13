@@ -71,11 +71,9 @@ Results of `examples/scripts.tex`:
 - does hyphenation work on ligatured words? can we get ligature components from
   Harbuzz?
 - what about kerning? 
-- what about node attributes? 
 - how to support complex scripts such as Arabic, where glyphs depends even on
   things like line start/end, hyphenation, etc.? 
-- why some fonts fail completely? For example Gentium with OpenType features,
-  or Amiri for Arabic
+- why some fonts fail completely? For example Amiri for Arabic
 - `pdffonts` command reports this error message on `examples/scripts.pdf`:
 
         $ Syntax Error (103800): Dictionary key must be a name object
