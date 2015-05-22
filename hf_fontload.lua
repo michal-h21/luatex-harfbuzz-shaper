@@ -276,7 +276,7 @@ M.process_nodes = function(head,groupcode)
     -- we don't need first node anymore
     -- table.remove(newhead_table,1)
     newhead = process_newhead(newhead_table)
-    -- node.flush_list(head)
+    node.flush_list(head)
     -- print "return newhead"
     return newhead
   end
