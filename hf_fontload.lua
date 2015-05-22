@@ -15,7 +15,10 @@ luatexbase.add_to_callback("define_font",
       return font.read_vf(name,size)
     end
     local fonttype, f
-    local options = M.options--{font = name}
+    local options = {}
+    for k,v in pairs(M.options) do--{font = name}
+      options[k] = v
+    end
     options.font = name
     local hbfont = harfbuzz._face(options)
     f = {}
