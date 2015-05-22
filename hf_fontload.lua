@@ -242,15 +242,15 @@ M.process_nodes = function(head,groupcode)
         -- if n is table, it contains glyph nodes which needs to be 
         -- inserted to the node list
         if type(n) == "table" then
-          -- print "newhead table"
+           -- print "newhead table"
           newhead = process_newhead(n,newhead)
         else
           if not newhead then 
-            -- print("No newhead", n.id)
-            newhead = n
+             -- print("No newhead", n.id)
+            newhead = node.copy(n)
           else
-            -- print("node insert",n.id)
-            node.insert_after(newhead, node.tail(newhead), n)
+            -- print("node insert",n.id, utfchar(n.char or 0))
+            node.insert_after(newhead, node.tail(newhead), node.copy(n))
           end
         end
       end
