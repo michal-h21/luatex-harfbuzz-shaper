@@ -177,12 +177,20 @@ M.process_nodes = function(head,groupcode)
   local newhead_table = {}
   local current_text = {}
   local current_node = {}
+  local direction 
   local proc_groupcodes = M.processed_groupcodes
   if not proc_groupcodes[groupcode] then
     return head
   end
   local insert_node = function(curr_node)
     newhead_table[#newhead_table + 1] = curr_node
+  end
+  local table_reverse = function(t)
+    local n = {}
+    for i = #t, 1, -1 do
+      n[#n+1]=t[i]
+    end
+    return n
   end
   local build_text = function() 
     if #current_text > 0 then
@@ -192,7 +200,13 @@ M.process_nodes = function(head,groupcode)
       --table.insert(newhead_table, M.make_nodes(text, current_text.font, current_text.lang,M.options))
       local current_font = current_text.font
       local options = M.get_font(current_font).options
-      insert_node(M.make_nodes(text, {font = current_font, lang= current_text.lang},options))
+      local newtext = M.make_nodes(text, {font = current_font, lang= current_text.lang},options)
+      -- fix for fonts with RTL direction and textdirection of TRT
+      if options.direction == "RTL" and direction == "TRT" then      
+        -- text is double reversed, we must reverse it back
+        newtext = table_reverse(newtext)
+      end
+      insert_node(newtext)
     end
     current_text = {}
   end
@@ -221,6 +235,7 @@ M.process_nodes = function(head,groupcode)
     elseif n.id == 0 or n.id == 1 then
       -- hlist and vlist nodes
       build_text()
+      direction = n.dir
       local newhead = M.process_nodes(n.head,"")
       local newhlist = node.copy(n)
       newhlist.head = newhead
@@ -261,9 +276,12 @@ M.process_nodes = function(head,groupcode)
     -- we don't need first node anymore
     -- table.remove(newhead_table,1)
     newhead = process_newhead(newhead_table)
+    -- node.flush_list(head)
     -- print "return newhead"
     return newhead
   end
   return head
 end
+
+
 return M
