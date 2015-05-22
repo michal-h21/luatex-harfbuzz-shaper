@@ -240,7 +240,7 @@ M.process_nodes = function(head,groupcode)
       build_text()
       direction = n.dir
       local newhead = M.process_nodes(n.head,"")
-      local newhlist = node.copy(n)
+      local newhlist = node.copy_list(n)
       newhlist.head = newhead
       insert_node(newhlist)
     else
