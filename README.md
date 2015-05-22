@@ -68,12 +68,14 @@ Results of `examples/scripts.tex`:
 
 ## Questions and issues
 
-- does hyphenation work on ligatured words? can we get ligature components from
-  Harbuzz?
+- hyphenation seems to work, but words are hyphenated before processing with
+  Harfbuzz. Because only directly following glyph nodes are aaken as words,
+  actual word may be broken into several chunks for Harbuzz processing. It
+  probably isn't problem for latin typefaces, but what about complex scripts?
 - what about kerning? 
 - how to support complex scripts such as Arabic, where glyphs depends even on
-  things like line start/end, hyphenation, etc.? 
-- why some fonts fail completely? For example Amiri for Arabic
+  things like line start/end, hyphenation, etc.? Basic Arabic processing seems
+  to work.
 - `pdffonts` command reports this error message on `examples/scripts.pdf`:
 
         $ Syntax Error (103800): Dictionary key must be a name object
