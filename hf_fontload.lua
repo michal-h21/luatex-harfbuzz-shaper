@@ -241,6 +241,7 @@ M.process_nodes = function(head,groupcode)
       direction = n.dir
       local newhead = M.process_nodes(n.head,"")
       local newhlist = node.copy_list(n)
+      newhlist.dir = n.dir
       newhlist.head = newhead
       insert_node(newhlist)
     else
@@ -268,7 +269,9 @@ M.process_nodes = function(head,groupcode)
             newhead = node.copy(n)
           else
             -- print("node insert",n.id, utfchar(n.char or 0))
-            node.insert_after(newhead, node.tail(newhead), node.copy(n))
+            -- why not node.copy? it breaks pardir. why? don't know.
+            -- node.insert_after(newhead, node.tail(newhead), node.copy(n))
+            node.insert_after(newhead, node.tail(newhead), (n))
           end
         end
       end
