@@ -121,7 +121,7 @@ M.set_font_option = function(name, value)
   current_options[name] = value
 end
 
-local save_options = function(fontid)
+M.save_options = function(fontid)
   if current_options then
     local current_font = M.get_font(fontid)
     local options = current_font.options or {}
@@ -216,7 +216,7 @@ M.process_nodes = function(head,groupcode)
   for n in node.traverse(head) do
     current_node = node.copy(n)
     if n.id ==37 then
-      save_options(n.font)
+      M.save_options(n.font)
       local _,face = M.get_font(n.font)
       -- process only fonts loaded by Harfbuzz
       if face then
