@@ -3,6 +3,29 @@ local harfbuzz = require "justenoughharfbuzz"
 local usedfonts = {}
 
 M.options = {font =  "TeX Gyre Termes", weight = 200,script = "", direction = "LTR", language = "en", size = 10, features = "+liga", variant = "normal"}
+
+-- set default parameters for tfm or vf fonts
+local tfm_font_parameters = function(tfmdata)
+  -- support for microtype
+  -- copied from luaotfload
+  local parameters = tfmdata.parameters or {}
+  if not parameters.expansion then
+    parameters.expansion = {
+      stretch=tfmdata.stretch   or 0,
+      shrink=tfmdata.shrink   or 0,
+      step=tfmdata.step    or 0,
+      auto=tfmdata.auto_expand or false,
+
+    }
+  end
+  if not parameters.protrusion then
+    parameters.protrusion={
+      auto=auto_protrude
+    }
+  end
+  tfmdata.parameters = parameters
+  return tfmdata
+end
 -- this is a little bit modified callback from:
 -- http://wiki.luatex.org/index.php/Use_a_TrueType_font
 luatexbase.add_to_callback("define_font",
@@ -10,9 +33,9 @@ luatexbase.add_to_callback("define_font",
     -- first detect whether the font is tfm or vf file. harfbuzz always loads
     -- some fallback font, so we must filter them in advance
     if kpse.find_file(name,"tfm") or kpse.find_file(name,"ofm") then
-      return font.read_tfm(name,size)
+      return tfm_font_parameters(font.read_tfm(name,size))
     elseif kpse.find_file(name,"vf") or kpse.find_file(name,"ovf") then
-      return font.read_vf(name,size)
+      return tfm_font_parameters(font.read_vf(name,size))
     end
     local fonttype, f
     local options = {}
@@ -98,7 +121,7 @@ luatexbase.add_to_callback("define_font",
       -- loaded at this point 
       f = font.read_tfm(name, size)
     end
-  return f
+  return tfm_font_parameters(f)
   end, "custom fontloader")
 
 local utfchar =  function(x)
@@ -108,7 +131,7 @@ end
 
 -- helper function to get font options and font face
 M.get_font = function(fontid)
-  local fontoptions = usedfonts[fontid] or font.fonts[fontid]
+  local fontoptions = usedfonts[fontid] or font.fonts[fontid] or {}
   usedfonts[fontid] = fontoptions
   local face = fontoptions.face
   return fontoptions,face
