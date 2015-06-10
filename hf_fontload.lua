@@ -9,9 +9,9 @@ luatexbase.add_to_callback("define_font",
   function(name, size)
     -- first detect whether the font is tfm or vf file. harfbuzz always loads
     -- some fallback font, so we must filter them in advance
-    if kpse.find_file(name,"tfm") then
+    if kpse.find_file(name,"tfm") or kpse.find_file(name,"ofm") then
       return font.read_tfm(name,size)
-    elseif kpse.find_file(name,"vf") then
+    elseif kpse.find_file(name,"vf") or kpse.find_file(name,"ovf") then
       return font.read_vf(name,size)
     end
     local fonttype, f
