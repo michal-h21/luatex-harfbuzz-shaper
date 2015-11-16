@@ -35,7 +35,7 @@ require "luaotfload-log.lua"       --- this populates the luaotfload.log.* names
 require "luaotfload-parsers"       --- fonts.conf, configuration, and request syntax                                                                  
 require "luaotfload-configuration" --- configuration file handling    
 require "luaotfload-database"
-require "luaotfload-features"
+require "hb_lotfl_fix_features"
 
 -- load default configuration
 
@@ -45,7 +45,7 @@ config.actions.apply_defaults()
 -- local lpeg = lpeg
 -- local lpegmatch = lpeg.match
 
-local resolve_cached = fonts.names.resolve_name
+local resolve_cached = fonts.names.resolve_cached
 local handle_request = fonts.names.handle_request
 local resolve_fullpath = fonts.names.getfilename
 
@@ -54,13 +54,14 @@ local function find(specification, size)
   local specification = specification or ""
   request.specification = specification
   local spec = handle_request(request)
+  local spec = request
 
   -- for k,v in pairs(fonts.names) do
   --   print(k,v)
   -- end
 
   -- print "-----------------"
-  -- for k,v in pairs(spec) do
+  -- for k,v in pairs(spec.features) do
   --   print(k,v)
   -- end
 
@@ -75,7 +76,7 @@ local function find(specification, size)
   end
   local fullpath = resolve_fullpath(base,ext)
   spec.fullpath = fullpath
-  spec.fontfile = fontfile
+  spec.filename = fontfile
   return fullpath, spec
 end
 
