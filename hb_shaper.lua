@@ -14,6 +14,7 @@ end
 M.get_font = function(fontid)
   local fontoptions = usedfonts[fontid] or font.fonts[fontid] or {}
   usedfonts[fontid] = fontoptions
+  -- we no longer use face, it is in spec.data now
   local face = fontoptions.face
   return fontoptions,face
 end
@@ -38,18 +39,33 @@ M.save_options = function(fontid)
 end
 
 
+local function shape(text,specification, dir, size)
+  local feat = specification.features
+  local script = feat.script
+  local direction = dir
+  direction = "LTR"
+  local lang = feat.language
+  local size = size
+  local features = "+liga +clig"
+  print( script, direction, lang)
+  return {harfbuzz._shape(text,specification.data, 0,  script, direction, lang, size, features)}
+end
   -- nodeoptions are options for glyph nodes
 -- options are for harfbuzz
 M.make_nodes = function(text, nodeoptions, options)
   local nodeoptions = nodeoptions or {}
   local fontid = nodeoptions.font
-  local fontoptions, face = M.get_font(fontid)
-  if not face then return {} end
+  local direction = nodeoptions.direction
+  local fontoptions = M.get_font(fontid)
+  local size = fontoptions.size
+  -- if not face then return {} end
+  local spec = fontoptions.spec
   -- for k,v in pairs(options) do print("option",k,v) end;
-  local result = {
-    harfbuzz._shape(text,face,options.script, options.direction,
-      options.language, options.size, options.features)
-  }
+  local result = shape(text, spec,direction, size)
+  -- local result = {
+  --   harfbuzz._shape(text,face,options.script, options.direction,
+  --     options.language, options.size, options.features)
+  -- }
   local nodetable = {}
   for _, v in ipairs(result) do
     -- character from backmap is sometimes too big for unicode.utf8.char
@@ -84,7 +100,11 @@ M.process_nodes = function(head,groupcode)
   local newhead_table = {}
   local current_text = {}
   local current_node = {}
-  local direction 
+  local convert_dir =  function(dir)
+    print("direction", dir)
+    local directions = {}
+  end
+  local direction --= convert_dir(tex.textdir)
   local proc_groupcodes = M.processed_groupcodes
   if not proc_groupcodes[groupcode] then
     return head
@@ -102,7 +122,7 @@ M.process_nodes = function(head,groupcode)
   local build_text = function() 
     if #current_text > 0 then
       local text = table.concat(current_text)
-      -- print("callback text",text)
+      print("callback text",text)
     -- reset current_text
       --table.insert(newhead_table, M.make_nodes(text, current_text.font, current_text.lang,M.options))
       local current_font = current_text.font
