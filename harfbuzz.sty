@@ -4,7 +4,7 @@
 \begin{luacode*}
   luaharfbuzz = require "hb_shaper"
   local fontloader = require "hb_fontload"
-   luatexbase.add_to_callback("define_font",fontload.loader, "font loader")
+   luatexbase.add_to_callback("define_font",fontloader.loader, "font loader")
 \end{luacode*}
 
 \newcommand\startharfbuzz{%
