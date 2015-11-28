@@ -127,7 +127,12 @@ M.process_nodes = function(head,groupcode)
       --table.insert(newhead_table, M.make_nodes(text, current_text.font, current_text.lang,M.options))
       local current_font = current_text.font
       local options = M.get_font(current_font).options
-      local newtext = M.make_nodes(text, {font = current_font, lang= current_text.lang},options)
+      local nodeoptions = {
+        font = current_font, 
+        lang= current_text.lang, 
+        subtype= 1
+      }
+      local newtext = M.make_nodes(text,nodeoptions ,options)
       -- fix for fonts with RTL direction and textdirection of TRT
       if options.direction == "RTL" and direction == "TRT" then      
         -- text is double reversed, we must reverse it back
@@ -168,8 +173,11 @@ M.process_nodes = function(head,groupcode)
       newhlist.dir = n.dir
       newhlist.head = newhead
       insert_node(newhlist)
+    elseif n.id == 7 and (n.subtype == 3 or n.subtype == 4 or n.subtype == 5) then
+      print("Hypen", n.subtype)
     else
       build_text()
+      
       insert_node(n)
     end
   end
@@ -206,6 +214,8 @@ M.process_nodes = function(head,groupcode)
     -- we don't need first node anymore
     -- table.remove(newhead_table,1)
     newhead = process_newhead(newhead_table)
+    lang.hyphenate(newhead)
+    node.kerning(newhead)
     -- node.flush_list(head)
     -- print "return newhead"
     return newhead
