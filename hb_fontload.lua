@@ -48,7 +48,8 @@ function M.loader(specification, size)
   print("font file", name)
   local fonttype = string.match(string.lower(name), "otf$") and "opentype" or string.match(string.lower(name), "ttf$") and "truetype"
   if fonttype then
-    filename = kpse.find_file(name, "opentype fonts") or kpse.find_file(name, "truetype fonts")
+    -- filename = kpse.find_file(name, "opentype fonts") or kpse.find_file(name, "truetype fonts")
+    local filename = spec.fullpath
     if size < 0 then
       size = (- 655.36) * size
     end
