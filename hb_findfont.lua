@@ -77,6 +77,9 @@ local function find(specification, size)
   local fullpath = resolve_fullpath(base,ext)
   spec.fullpath = fullpath
   spec.filename = fontfile
+  local f = io.open(fullpath, "r")
+  spec.data = f:read("*all")
+  f:close()
   return fullpath, spec
 end
 
