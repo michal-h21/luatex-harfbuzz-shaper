@@ -43,11 +43,11 @@ local function shape(text,specification, dir, size)
   local feat = specification.features
   local script = feat.script
   local direction = dir
-  direction = "LTR"
+  -- direction = "LTR"
   local lang = feat.language
   local size = size
   local features = "+liga +clig"
-  print( script, direction, lang)
+  -- print( script, direction, lang)
   return {harfbuzz._shape(text,specification.data, 0,  script, direction, lang, size, features)}
 end
   -- nodeoptions are options for glyph nodes
@@ -55,7 +55,7 @@ end
 M.make_nodes = function(text, nodeoptions, options)
   local nodeoptions = nodeoptions or {}
   local fontid = nodeoptions.font
-  local direction = nodeoptions.direction
+  local direction = options.direction
   local fontoptions = M.get_font(fontid)
   local size = fontoptions.size
   -- if not face then return {} end
@@ -100,9 +100,22 @@ M.process_nodes = function(head,groupcode)
   local newhead_table = {}
   local current_text = {}
   local current_node = {}
+  -- directions are handled as stack
+  local dir_stack = {tex.textdir}
+  local handle_dir = function(dir)
+    local operator, dir = dir:match "(.)(.-)"
+    if operator  == "+" then
+      table.insert(dir_stack, dir)
+    elseif operator == "-" then
+      table.remove(dir_stack)
+    end
+  end
+  -- return current value of dir_stack
+  local current_dir = function() return dir_stack[#dir_stack] end
   local convert_dir =  function(dir)
-    print("direction", dir)
-    local directions = {}
+    -- map LuaTeX directions to OT directions
+    local directions = {TLT = "LTR", TRT = "RTL", RTT = "TTB"}
+    return directions[dir] or dir
   end
   local direction --= convert_dir(tex.textdir)
   local proc_groupcodes = M.processed_groupcodes
@@ -122,11 +135,13 @@ M.process_nodes = function(head,groupcode)
   local build_text = function() 
     if #current_text > 0 then
       local text = table.concat(current_text)
-      print("callback text",text)
+    -- print("callback text",text)
     -- reset current_text
       --table.insert(newhead_table, M.make_nodes(text, current_text.font, current_text.lang,M.options))
       local current_font = current_text.font
+      local direction = current_dir()
       local options = M.get_font(current_font).options
+      options.direction = convert_dir(direction)
       local nodeoptions = {
         font = current_font, 
         lang= current_text.lang, 
@@ -174,10 +189,11 @@ M.process_nodes = function(head,groupcode)
       newhlist.head = newhead
       insert_node(newhlist)
     elseif n.id == 7 and (n.subtype == 3 or n.subtype == 4 or n.subtype == 5) then
-      print("Hypen", n.subtype)
+      -- print("Hypen", n.subtype)
     else
       build_text()
-      
+      -- handle dir whatsits
+      if n.id == 8 and n.subtype == 7 then handle_dir(n.dir) end
       insert_node(n)
     end
   end
