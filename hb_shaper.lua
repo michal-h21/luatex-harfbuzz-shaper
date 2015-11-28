@@ -47,7 +47,7 @@ local function shape(text,specification, dir, size)
   local lang = feat.language
   local size = size
   local features = "+liga +clig"
-  -- print( script, direction, lang)
+  print( script, direction, lang)
   return {harfbuzz._shape(text,specification.data, 0,  script, direction, lang, size, features)}
 end
   -- nodeoptions are options for glyph nodes
@@ -70,14 +70,16 @@ M.make_nodes = function(text, nodeoptions, options)
   for _, v in ipairs(result) do
     -- character from backmap is sometimes too big for unicode.utf8.char
     -- print("hf",v.name) -- , utfchar(fontoptions.backmap[v.codepoint]))
-    local n = node.new(37)
+    local n
+    local char =  fontoptions.backmap[v.codepoint]
+    n = node.new(37)
     --n.font = fontid
     --n.lang = language
     -- set node properties
     for k,j in pairs(nodeoptions) do
       n[k] = j
     end
-    n.char = fontoptions.backmap[v.codepoint]
+    n.char = char
     --node.write(n)
     nodetable[#nodetable+1] = node.copy(n)
   end--]]
@@ -151,7 +153,7 @@ M.process_nodes = function(head,groupcode)
       -- fix for fonts with RTL direction and textdirection of TRT
       if options.direction == "RTL" and direction == "TRT" then      
         -- text is double reversed, we must reverse it back
-        newtext = table_reverse(newtext)
+        -- newtext = table_reverse(newtext)
       end
       insert_node(newtext)
     end
@@ -179,6 +181,8 @@ M.process_nodes = function(head,groupcode)
         build_text()
         insert_node(n)
       end
+    -- elseif n.id == 10 and  n.subtype == 0 then
+      -- current_text[#current_text + 1] = " "
     elseif n.id == 0 or n.id == 1 then
       -- hlist and vlist nodes
       build_text()
