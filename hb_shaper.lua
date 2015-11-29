@@ -39,6 +39,7 @@ M.save_options = function(fontid)
 end
 
 
+
 local function shape(text,specification, dir, size)
   local feat = specification.features
   local script = feat.script
@@ -46,8 +47,14 @@ local function shape(text,specification, dir, size)
   -- direction = "LTR"
   local lang = feat.language
   local size = size
-  local features = "+liga +clig"
-  print( script, direction, lang)
+  local f = {}
+  for k,v in pairs(feat) do
+    if v == true then
+      table.insert(f, "+"..k)
+    end
+  end
+  local features = table.concat(f, " ")
+  print( script, direction, lang, features)
   return {harfbuzz._shape(text,specification.data, 0,  script, direction, lang, size, features)}
 end
   -- nodeoptions are options for glyph nodes
