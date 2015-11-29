@@ -53,7 +53,7 @@ local function shape(text,specification, dir, size)
       table.insert(f, "+"..k)
     end
   end
-  local features = table.concat(f, " ")
+  local features = table.concat(f, ";")
   print( script, direction, lang, features)
   return {harfbuzz._shape(text,specification.data, 0,  script, direction, lang, size, features)}
 end
