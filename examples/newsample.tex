@@ -1,0 +1,54 @@
+\documentclass{article}
+\usepackage[czech]{babel}
+\usepackage{harfbuzz}
+\font\sample={Linux Libertine O/I:+liga;} at 12pt
+\font\urdu={Noto Nastaliq Urdu:+language=URD;script=arab} at 12pt
+\font\amiri={Amiri:+language=ARA;+script=arab} at 12pt
+\font\sheh={Scheherazade:+language=URD;script=arab} at 16pt
+\font\latin={Linux Libertine O:+smcp} at 12pt
+
+\newcommand\sampletext[2]{%
+\stopharfbuzz%
+{\textdir TLT%
+  \pardir TLT%
+  \par\noindent\latin{#1 without Harfbuzz}}\par
+#2\par
+\startharfbuzz%
+{\textdir TLT%
+  \pardir TLT%
+  \par\noindent\latin#1 with Harfbuzz}\par
+#2\par%
+}
+\renewcommand\latintext[1]{\bgroup\textdir TLT #1\egroup}
+\begin{document}
+\startharfbuzz
+
+\sample Hello world. {\textdir TLT Příliš žluťoučký kůň} grafika office finance
+
+\pardir TRT
+\textdir TRT
+
+\sheh 
+
+\sampletext{Urdu with Scheherazade}{پراگ (\latintext{Prague}) چیک جمہوریہ کا دارالحکومت اور سیاسی، اقتصادی، تجارتی اور تعلیمی مرکز ہے۔ یہچیک جمہوریہ کا سب سے بڑا شہر بھی ہے۔ وسطی بوہیمیا میں دریائے ولتواوا کے کنارے واقع یہ شہر تقریبا 12 لاکھ آبادی کا حامل ہے۔}
+
+% \urdu
+
+% \sampletext{Urdu with Noto}{پراگ (\latintext{Prague}) چیک جمہوریہ کا دارالحکومت اور سیاسی، اقتصادی، تجارتی اور تعلیمی مرکز ہے۔ یہچیک جمہوریہ کا سب سے بڑا شہر بھی ہے۔ وسطی بوہیمیا میں دریائے ولتواوا کے کنارے واقع یہ شہر تقریبا 12 لاکھ آبادی کا حامل ہے۔}
+
+\amiri
+\sampletext{Arabic with Amiri}{براغ (بالتشيكية: \latintext{Praha}، براها) هي عاصمة جمهورية التشيك وأكبر مدنها. تقع على نهر فلتافا في وسط منطقة بوهيميا التاريخية. بخلاف الكثير من مدن أوروبا الوسطى لم تدمر المدينة بشكل كبير في الحرب العالمية الثانية وحافظت على شكلها الجميل. يبلغ عدد سكان المدينة \latintext{1.2} مليون نسمة وتصل مساحتها حوالي \latintext{500} كم\latintext{2.}}
+% \stopharfbuzz
+
+% پراگ (Prague) چیک جمہوریہ کا دارالحکومت اور سیاسی، اقتصادی، تجارتی اور تعلیمی مرکز ہے۔ یہچیک جمہوریہ کا سب سے بڑا شہر بھی ہے۔ وسطی بوہیمیا میں دریائے ولتواوا کے کنارے واقع یہ شہر تقریبا 12 لاکھ آبادی کا حامل ہے۔
+
+% \startharfbuzz
+
+% \sheh براغ (بالتشيكية: Praha، براها) هي عاصمة جمهورية التشيك وأكبر مدنها. تقع على نهر فلتافا في وسط منطقة بوهيميا التاريخية. بخلاف الكثير من مدن أوروبا الوسطى لم تدمر المدينة بشكل كبير في الحرب العالمية الثانية وحافظت على شكلها الجميل. يبلغ عدد سكان المدينة 1.2 مليون نسمة وتصل مساحتها حوالي 500 كم2.
+
+% \stopharfbuzz
+
+% براغ (بالتشيكية: Praha، براها) هي عاصمة جمهورية التشيك وأكبر مدنها. تقع على نهر فلتافا في وسط منطقة بوهيميا التاريخية. بخلاف الكثير من مدن أوروبا الوسطى لم تدمر المدينة بشكل كبير في الحرب العالمية الثانية وحافظت على شكلها الجميل. يبلغ عدد سكان المدينة 1.2 مليون نسمة وتصل مساحتها حوالي 500 كم2.
+
+\end{document}
+
