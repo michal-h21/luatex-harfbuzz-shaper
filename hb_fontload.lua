@@ -75,6 +75,7 @@ function M.loader(specification, size)
       f.parameters.quad = 1.0 * size
       f.parameters.extra_space = 0
       f.characters = { }
+      f.units_per_em = ttffont.units_per_em
       local mag = size / ttffont.units_per_em
       -- local utfchar = unicode.utf8.char
       local names_of_char = { }
