@@ -3,6 +3,9 @@
 local M = {}
 
 local find_font = require "hb_findfont"
+local hb = require "harfbuzz"
+local Face = hb.Face
+local Font = hb.Font
 -- set default parameters for tfm or vf fonts
 local tfm_font_parameters = function(tfmdata)
   -- support for microtype
@@ -58,8 +61,9 @@ function M.loader(specification, size)
       f = { }
       f.name = ttffont.fontname
       f.spec = spec
-      if spec.data then
-        f.face = true
+      if spec.fullpath then
+        f.face = Face.new(spec.fullpath)
+        f.hb_font = Font.new(f.face)
       end
       f.options = options
       f.fullname = ttffont.names[1].names.fullname
@@ -75,8 +79,8 @@ function M.loader(specification, size)
       f.parameters.quad = 1.0 * size
       f.parameters.extra_space = 0
       f.characters = { }
-      f.units_per_em = ttffont.units_per_em
       local mag = size / ttffont.units_per_em
+      f.units_per_em = ttffont.units_per_em
       -- local utfchar = unicode.utf8.char
       local names_of_char = { }
       for char, glyph in pairs(ttffont.map.map) do
@@ -91,7 +95,11 @@ function M.loader(specification, size)
         f.characters[char] = {
           index = glyph,
           width = glyph_table.width * mag,
-          name = glyph_table.name 
+          name = glyph_table.name,
+          -- x_offset = (glyph_table.x_offset or 0) * mag,
+          -- y_offset = (glyph_table.y_offset or 0) * mag,
+          -- x_advance = (glyph_table.x_advance or 0) * mag,
+          -- y_advance = (glyph_table.y_advance or 0) * mag,
         }
         if glyph_table.boundingbox[4] then
           f.characters[char].height = glyph_table.boundingbox[4] * mag
