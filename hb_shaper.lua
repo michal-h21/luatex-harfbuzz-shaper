@@ -97,7 +97,9 @@ M.make_nodes = function(text, nodeoptions, options)
     end
     n.char = char
     local factor = 1
-    if direction == "RTL" then factor = -1 end
+    if direction == "RTL" then 
+      factor = -1 
+    end
     local function calc_dim(field)
       return v[field] / fontoptions.units_per_em * fontoptions.size
     end
