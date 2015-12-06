@@ -882,6 +882,7 @@ local handle_request = function (specification)
     end
     local lookup, name  = select_lookup(request)
     local temp = {}
+    request.features = request.features or {}
     for k, v in pairs(request.features) do temp[k] = v end
     local defaults    = apply_default_features(temp)
     request.features.language = defaults.language
