@@ -881,7 +881,9 @@ local handle_request = function (specification)
         return specification
     end
     local lookup, name  = select_lookup(request)
-    -- request.features    = apply_default_features(request.features)
+    local defaults    = apply_default_features(request.features)
+    request.features.language = defaults.language
+    request.features.script = defaults.script
 
     if name then
         specification.name    = name
