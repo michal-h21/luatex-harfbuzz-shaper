@@ -1,5 +1,6 @@
 local M =  {}
-local harfbuzz = require "justenoughharfbuzz"
+local harfbuzz = require "harfbuzz"
+local Buffer = harfbuzz.Buffer
 local usedfonts = {}
 
 M.options = {font =  "TeX Gyre Termes", weight = 200,script = "", direction = "LTR", language = "en", size = 10, features = "+liga", variant = "normal"}
@@ -40,10 +41,12 @@ end
 
 
 
-local function shape(text,specification, dir, size)
+local function shape(text,fontoptions, dir, size)
+  local specification = fontoptions.spec
   local feat = specification.features
   local script = feat.script
-  local direction = dir
+  local direction = dir 
+  if direction == "" then direction = nil end
   -- direction = "LTR"
   local lang = feat.language
   local size = size
@@ -53,9 +56,15 @@ local function shape(text,specification, dir, size)
       table.insert(f, "+"..k)
     end
   end
-  local features = table.concat(f, ";")
+  local features = table.concat(f, ",")
+  local options = {script = script, language = language, direction = direction, features = features}
   print( script, direction, lang, features)
-  return {harfbuzz._shape(text,specification.data, 0,  script, direction, lang, size, features)}
+  local buffer = Buffer.new()
+  buffer:add_utf8(text)
+  local Font = fontoptions.hb_font
+  local res = harfbuzz.shape(Font, buffer, options)
+  -- return {harfbuzz._shape(text,specification.data, 0,  script, direction, lang, size, features)}
+  return res
 end
   -- nodeoptions are options for glyph nodes
 -- options are for harfbuzz
@@ -66,9 +75,8 @@ M.make_nodes = function(text, nodeoptions, options)
   local fontoptions = M.get_font(fontid)
   local size = fontoptions.size
   -- if not face then return {} end
-  local spec = fontoptions.spec
   -- for k,v in pairs(options) do print("option",k,v) end;
-  local result = shape(text, spec,direction, size)
+  local result = shape(text, fontoptions,direction, size)
   -- local result = {
   --   harfbuzz._shape(text,face,options.script, options.direction,
   --     options.language, options.size, options.features)
@@ -76,10 +84,11 @@ M.make_nodes = function(text, nodeoptions, options)
   local nodetable = {}
   for _, v in ipairs(result) do
     -- character from backmap is sometimes too big for unicode.utf8.char
+    -- it is because it is often PUA
     -- print("hf",v.name) -- , utfchar(fontoptions.backmap[v.codepoint]))
     local n
     local char =  fontoptions.backmap[v.codepoint]
-    n = node.new(37)
+    n = node.new("glyph")
     --n.font = fontid
     --n.lang = language
     -- set node properties
@@ -87,6 +96,22 @@ M.make_nodes = function(text, nodeoptions, options)
       n[k] = j
     end
     n.char = char
+    local factor = 1
+    if direction == "RTL" then factor = -1 end
+    local function calc_dim(field)
+      return v[field] / fontoptions.units_per_em * fontoptions.size
+    end
+    -- deal with kerning
+    local x_advance = calc_dim "x_advance"
+    if x_advance and x_advance ~= n.width then
+      local kern = node.new "kern"
+      kern.kern = (n.width - x_advance) * factor
+      nodetable[#nodetable+1] = kern
+    end
+    -- width and height are set from font, we can't change them anyway
+    -- n.height = calc_dim "y_advance"
+    n.xoffset = (calc_dim "x_offset") * factor
+    n.yoffset = calc_dim "y_offset"
     --node.write(n)
     nodetable[#nodetable+1] = node.copy(n)
   end--]]
@@ -97,6 +122,34 @@ M.write_nodes = function(nodetable)
   for _, n in ipairs(nodetable) do
     node.write(n)
   end
+end
+
+local function reverse_glyphs(t)
+  -- we need to revere the shaped table, but leave characters with same cluster in the original order
+  local n = {}
+  local i = #t
+  local function eat_cluster(x)
+    local x = x or {}
+    local curr = t[i]
+    -- we must also fix x_offset
+    -- what about x_advance? we don't use it yet
+    x[#x+1] = curr
+    i = i - 1
+    local next = t[i] or {}
+    if i < 1 or curr.cluster ~= next.cluster then
+      return x
+    else
+      return eat_cluster(x)
+    end
+  end
+  while i > 0 do
+    local p = eat_cluster() or {}
+    print("cluster", #p)
+    for _, v in ipairs(p) do
+      n[#n+1] = v
+    end
+  end
+  return n
 end
 
 
@@ -134,13 +187,13 @@ M.process_nodes = function(head,groupcode)
   local insert_node = function(curr_node)
     newhead_table[#newhead_table + 1] = curr_node
   end
-  local table_reverse = function(t)
-    local n = {}
-    for i = #t, 1, -1 do
-      n[#n+1]=t[i]
-    end
-    return n
-  end
+  -- local table_reverse = function(t)
+  --   local n = {}
+  --   for i = #t, 1, -1 do
+  --     n[#n+1]=t[i]
+  --   end
+  --   return n
+  -- end
   local build_text = function() 
     if #current_text > 0 then
       local text = table.concat(current_text)
@@ -161,6 +214,7 @@ M.process_nodes = function(head,groupcode)
       if options.direction == "RTL" and direction == "TRT" then      
         -- text is double reversed, we must reverse it back
         -- newtext = table_reverse(newtext)
+        newtext = reverse_glyphs(newtext)
       end
       insert_node(newtext)
     end
