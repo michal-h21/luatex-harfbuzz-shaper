@@ -881,7 +881,9 @@ local handle_request = function (specification)
         return specification
     end
     local lookup, name  = select_lookup(request)
-    local defaults    = apply_default_features(request.features)
+    local temp = {}
+    for k, v in pairs(request.features) do temp[k] = v end
+    local defaults    = apply_default_features(temp)
     request.features.language = defaults.language
     request.features.script = defaults.script
 
