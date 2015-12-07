@@ -14,7 +14,7 @@
 \luaexec{
   luatexbase.add_to_callback("pre_linebreak_filter",luaharfbuzz.process_nodes, "harfbuzz")
   -- this fails
-  -- luatexbase.add_to_callback("hpack_filter",luaharfbuzz.process_nodes, "harfbuzz_hpack")
+  luatexbase.add_to_callback("hpack_filter",luaharfbuzz.process_nodes, "harfbuzz_hpack")
 }
 %\end{luacode*}%
 }
@@ -24,7 +24,7 @@
 \luaexec{%
   luatexbase.remove_from_callback("pre_linebreak_filter","harfbuzz")
   -- hbox processing sometimes fails
-  -- luatexbase.remove_from_callback("pre_linebreak_filter","harfbuzz_hpack")
+  luatexbase.remove_from_callback("hpack_filter","harfbuzz_hpack")
 }
 %\end{luacode*}%
 }
