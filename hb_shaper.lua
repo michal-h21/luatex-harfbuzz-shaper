@@ -101,21 +101,32 @@ M.make_nodes = function(text, nodeoptions, options)
       factor = -1 
     end
     local function calc_dim(field)
-      return v[field] / fontoptions.units_per_em * fontoptions.size
+      return math.floor(v[field] / fontoptions.units_per_em * fontoptions.size)
     end
     -- deal with kerning
     local x_advance = calc_dim "x_advance"
-    if x_advance and x_advance ~= n.width then
-      local kern = node.new "kern"
-      kern.kern = (n.width - x_advance) * factor
-      nodetable[#nodetable+1] = kern
-    end
     -- width and height are set from font, we can't change them anyway
     -- n.height = calc_dim "y_advance"
     n.xoffset = (calc_dim "x_offset") * factor
     n.yoffset = calc_dim "y_offset"
     --node.write(n)
     nodetable[#nodetable+1] = node.copy(n)
+    -- detect kerning
+    -- we must rule out rounding errors first
+    if x_advance and math.abs(x_advance - n.width) > 1 then
+      local kern = node.new "kern"
+      -- this formula is good for latin text, but what about TRL
+      kern.kern = (x_advance - n.width  ) * factor
+      -- it seems that kerns are inserted wrongly for RTL, we must fix it
+      if factor < 0 then
+        local pos = #nodetable - 1
+        if pos < 1 then pos = 1 end
+        table.insert(nodetable,pos, kern)
+      else
+        nodetable[#nodetable+1] = kern
+      end
+      print("kern", char, n.width, x_advance)
+    end
   end--]]
   return nodetable
 end
@@ -260,7 +271,8 @@ M.process_nodes = function(head,groupcode)
     else
       build_text()
       -- handle dir whatsits
-      if n.id == 8 and n.subtype == 7 then handle_dir(n.dir) end
+      if n.id == 8 and n.subtype == 7 then 
+        handle_dir(n.dir) end
       insert_node(n)
     end
   end
