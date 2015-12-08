@@ -275,7 +275,6 @@ M.process_nodes = function(head,groupcode)
       -- Ignore kerning from font
     elseif n.id == kern_id and n.subtype == 0 then
     else
-      print("neco jinyho", n.id, n.subtype)
       build_text()
       -- handle dir whatsits
       if n.id == whatsit_id and n.subtype == 7 then 
