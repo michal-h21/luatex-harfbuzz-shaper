@@ -45,22 +45,40 @@ M.save_options = function(fontid)
   end
 end
 
+local feat_cache = {}
+local function parse_features(feat_str)
+  local cached = feat_cache[feat_str]
+  if cached then return cached end
+  local feat = {}
+  for feature in feat_str:gmatch("(%+[%a0-9]+)") do
+    print("insert feature", feature)
+    feat[#feat+1] = feature
+  end
+  feat_cache[feat_str] = feat
+  return feat
+end
 
 
 local function shape(text,fontoptions, dir, size)
   local specification = fontoptions.spec
   local feat = specification.features
-  local script = feat.script
+  -- options specified directly in the document, it can overwrite font options
+  local docoptions = fontoptions.options 
+  local script =  docoptions.script or  feat.script 
   local direction = dir 
   if direction == "" then direction = nil end
   -- direction = "LTR"
-  local lang = feat.language
+  local lang = docoptions.language or feat.language
   local size = size
   local f = {}
   for k,v in pairs(feat) do
     if v == true then
       table.insert(f, "+"..k)
     end
+  end
+  local doc_feat = docoptions.features
+  for k,v in ipairs(parse_features(doc_feat)) do
+    f[#f+1] = v
   end
   local features = table.concat(f, ",")
   local buffer = Buffer.new()
