@@ -75,11 +75,13 @@ local function shape(text,fontoptions, dir, size)
   local lang = docoptions.language or feat.language
   local size = size
   local f = {}
+  -- font features
   for k,v in pairs(feat) do
     if v == true then
       table.insert(f, "+"..k)
     end
   end
+  -- features specified in \SetFontOption
   local doc_feat = docoptions.features
   for k,v in ipairs(parse_features(doc_feat)) do
     f[#f+1] = v
