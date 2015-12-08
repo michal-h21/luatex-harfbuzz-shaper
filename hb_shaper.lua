@@ -141,33 +141,6 @@ M.write_nodes = function(nodetable)
   end
 end
 
-local function reverse_glyphs(t)
-  -- we need to revere the shaped table, but leave characters with same cluster in the original order
-  local n = {}
-  local i = #t
-  local function eat_cluster(x)
-    local x = x or {}
-    local curr = t[i]
-    -- we must also fix x_offset
-    -- what about x_advance? we don't use it yet
-    x[#x+1] = curr
-    i = i - 1
-    local next = t[i] or {}
-    if i < 1 or curr.cluster ~= next.cluster then
-      return x
-    else
-      return eat_cluster(x)
-    end
-  end
-  while i > 0 do
-    local p = eat_cluster() or {}
-    print("cluster", #p)
-    for _, v in ipairs(p) do
-      n[#n+1] = v
-    end
-  end
-  return n
-end
 
 
 -- process_nodes callback can be called multiple times on the same head,
@@ -227,13 +200,6 @@ M.process_nodes = function(head,groupcode)
         subtype= 1
       }
       local newtext = M.make_nodes(text,nodeoptions ,options)
-      -- we should fix that right after shaping
-      -- -- fix for fonts with RTL direction and textdirection of TRT
-      -- if options.direction == "RTL" and direction == "TRT" then      
-      --   -- text is double reversed, we must reverse it back
-      --   -- newtext = table_reverse(newtext)
-      --   newtext = reverse_glyphs(newtext)
-      -- end
       insert_node(newtext)
     end
     current_text = {}
