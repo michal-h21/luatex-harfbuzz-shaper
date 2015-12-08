@@ -58,13 +58,17 @@ local function shape(text,fontoptions, dir, size)
   end
   local features = table.concat(f, ",")
   local options = {script = script, language = language, direction = direction, features = features}
-  print( script, direction, lang, features)
   local buffer = Buffer.new()
   buffer:add_utf8(text)
   local Font = fontoptions.hb_font
-  local res = harfbuzz.shape(Font, buffer, options)
+  harfbuzz.shape(Font, buffer, options)
+  local newdir = buffer:get_direction()
+  print( script, newdir, lang, features)
+  if newdir == "rtl" or  newdir == "RTL" then
+    buffer:reverse()
+  end
   -- return {harfbuzz._shape(text,specification.data, 0,  script, direction, lang, size, features)}
-  return res
+  return buffer:get_glyph_infos_and_positions()
 end
   -- nodeoptions are options for glyph nodes
 -- options are for harfbuzz
@@ -223,12 +227,13 @@ M.process_nodes = function(head,groupcode)
         subtype= 1
       }
       local newtext = M.make_nodes(text,nodeoptions ,options)
-      -- fix for fonts with RTL direction and textdirection of TRT
-      if options.direction == "RTL" and direction == "TRT" then      
-        -- text is double reversed, we must reverse it back
-        -- newtext = table_reverse(newtext)
-        newtext = reverse_glyphs(newtext)
-      end
+      -- we should fix that right after shaping
+      -- -- fix for fonts with RTL direction and textdirection of TRT
+      -- if options.direction == "RTL" and direction == "TRT" then      
+      --   -- text is double reversed, we must reverse it back
+      --   -- newtext = table_reverse(newtext)
+      --   newtext = reverse_glyphs(newtext)
+      -- end
       insert_node(newtext)
     end
     current_text = {}
