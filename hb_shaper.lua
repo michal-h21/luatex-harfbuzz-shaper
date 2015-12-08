@@ -11,6 +11,8 @@ local whatsit_id = node.id "whatsit"
 local hlist_id = node.id "hlist"
 local vlist_id = node.id "vlist"
 local disc_id = node.id "disc"
+local kern_id = node.id "kern"
+local penalty_id = node.id "penalty"
 
 local utfchar =  function(x)
   -- print(x)
@@ -268,9 +270,12 @@ M.process_nodes = function(head,groupcode)
       newhlist.dir = n.dir
       newhlist.head = newhead
       insert_node(newhlist)
-    elseif n.id == disc and (n.subtype == 3 or n.subtype == 4 or n.subtype == 5) then
+    elseif n.id == disc_id and (n.subtype == 3 or n.subtype == 4 or n.subtype == 5) then
       -- print("Hypen", n.subtype)
+      -- Ignore kerning from font
+    elseif n.id == kern_id and n.subtype == 0 then
     else
+      print("neco jinyho", n.id, n.subtype)
       build_text()
       -- handle dir whatsits
       if n.id == whatsit_id and n.subtype == 7 then 
