@@ -68,7 +68,7 @@ local function shape(text,fontoptions, dir, size)
     buffer:reverse()
   end
   -- return {harfbuzz._shape(text,specification.data, 0,  script, direction, lang, size, features)}
-  return buffer:get_glyph_infos_and_positions()
+  return buffer:get_glyph_infos_and_positions(), newdir
 end
   -- nodeoptions are options for glyph nodes
 -- options are for harfbuzz
@@ -80,7 +80,7 @@ M.make_nodes = function(text, nodeoptions, options)
   local size = fontoptions.size
   -- if not face then return {} end
   -- for k,v in pairs(options) do print("option",k,v) end;
-  local result = shape(text, fontoptions,direction, size)
+  local result, direction = shape(text, fontoptions,direction, size)
   -- local result = {
   --   harfbuzz._shape(text,face,options.script, options.direction,
   --     options.language, options.size, options.features)
@@ -101,7 +101,7 @@ M.make_nodes = function(text, nodeoptions, options)
     end
     n.char = char
     local factor = 1
-    if direction == "RTL" then 
+    if direction == "rtl" or direction == "RTL" then 
       factor = -1 
     end
     local function calc_dim(field)
@@ -120,10 +120,15 @@ M.make_nodes = function(text, nodeoptions, options)
     if x_advance and math.abs(x_advance - n.width) > 1 then
       local kern = node.new "kern"
       -- this formula is good for latin text, but what about TRL
-      kern.kern = (x_advance - n.width  ) * factor
+      if factor > 0 then 
+        kern.kern = (x_advance - n.width  ) * factor
+      else
+        -- really this? I am not sure why
+        kern.kern = (n.width - x_advance) * factor
+      end
       -- it seems that kerns are inserted wrongly for RTL, we must fix it
       if factor < 0 then
-        local pos = #nodetable - 1
+        local pos = #nodetable --- 1
         if pos < 1 then pos = 1 end
         table.insert(nodetable,pos, kern)
       else
