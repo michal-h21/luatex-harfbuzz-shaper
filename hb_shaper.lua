@@ -6,6 +6,12 @@ local usedfonts = {}
 M.options = {font =  "TeX Gyre Termes", weight = 200,script = "", direction = "LTR", language = "en", size = 10, features = "+liga", variant = "normal"}
 
 
+local glyph_id = node.id "glyph"
+local whatsit_id = node.id "whatsit"
+local hlist_id = node.id "hlist"
+local vlist_id = node.id "vlist"
+local disc_id = node.id "disc"
+
 local utfchar =  function(x)
   -- print(x)
   return unicode.utf8.char(x) or x
@@ -211,7 +217,7 @@ M.process_nodes = function(head,groupcode)
   end
   for n in node.traverse(head) do
     current_node = node.copy(n)
-    if n.id ==37 then
+    if n.id ==glyph_id then
       M.save_options(n.font)
       local _,face = M.get_font(n.font)
       -- process only fonts loaded by Harfbuzz
@@ -233,7 +239,7 @@ M.process_nodes = function(head,groupcode)
       end
     -- elseif n.id == 10 and  n.subtype == 0 then
       -- current_text[#current_text + 1] = " "
-    elseif n.id == 0 or n.id == 1 then
+    elseif n.id == hlist_id or n.id == vlist_id then
       -- hlist and vlist nodes
       build_text()
       direction = n.dir
@@ -242,12 +248,12 @@ M.process_nodes = function(head,groupcode)
       newhlist.dir = n.dir
       newhlist.head = newhead
       insert_node(newhlist)
-    elseif n.id == 7 and (n.subtype == 3 or n.subtype == 4 or n.subtype == 5) then
+    elseif n.id == disc and (n.subtype == 3 or n.subtype == 4 or n.subtype == 5) then
       -- print("Hypen", n.subtype)
     else
       build_text()
       -- handle dir whatsits
-      if n.id == 8 and n.subtype == 7 then 
+      if n.id == whatsit_id and n.subtype == 7 then 
         handle_dir(n.dir) end
       insert_node(n)
     end
