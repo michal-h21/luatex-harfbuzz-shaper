@@ -22,7 +22,7 @@
 \newcommand\textlatin[1]{\bgroup\textdir TLT #1\egroup}
 
   \begin{document}
-  \font\arab={Scheherazade:+language=ara;+script=arab;} at 12pt
+  \font\arab={Scheherazade:+language=ara;+script=arab;} at 18pt
 \arab 
   \startharfbuzz
 %  
@@ -44,14 +44,15 @@
 \font\urdu={Scheherazade:+script=arab;+language=URD} at 12pt
 \sampletext{Urdu}{پراگ (\textlatin{Prague}) چیک جمہوریہ کا دارالحکومت اور سیاسی، اقتصادی، تجارتی اور تعلیمی مرکز ہے۔ یہچیک جمہوریہ کا سب سے بڑا شہر بھی ہے۔ وسطی بوہیمیا میں دریائے ولتواوا کے کنارے واقع یہ شہر تقریبا \textlatin{12} لاکھ آبادی کا حامل ہے۔}
 
-\font\notourdu={Noto Nastaliq Urdu:+script=arab;+language=URD} at 12pt
+\font\notourdu={Noto Nastaliq Urdu:+script=arab;+language=URD} at 11pt
 \notourdu
 \sampletext{Urdu with Noto}{پراگ (\textlatin{Prague}) چیک جمہوریہ کا دارالحکومت اور سیاسی، اقتصادی، تجارتی اور تعلیمی مرکز ہے۔ یہچیک جمہوریہ کا سب سے بڑا شہر بھی ہے۔ وسطی بوہیمیا میں دریائے ولتواوا کے کنارے واقع یہ شہر تقریبا \textlatin{12} لاکھ آبادی کا حامل ہے۔}
 
 %\font\amiri={Amiri} at 12pt
-%\amiri
-%\SetFontOption{language}{PAS}
-%\SetFontOption{direction}{RTL}
+% \amiri
+\arab
+\SetFontOption{language}{PAS}
+% \SetFontOption{direction}{RTL}
 
 \sampletext{Pashtu}{پراگ ( په چیکی کې:\textlatin{Praha} ) د چېک د جمهوریت پایتخت دی او د چېک تر ټولو لوی ښار دی. مساحت یی تقریبا ۵۰۰ کیلومتره مربع ده. په اوس وخت کې پراگ تقریبا ۱،۲ میلیونه نفوس لری. پراگ هم د چېک جمهوریت ثقافتی او سیاسی مرکز دی. په پراگ کې د چېک جمهوریت تر ټولو لوی هوایی اډه پرته ده. د پراگ د ترافیک ترانسپورت ډیر عصری دی.}
 
