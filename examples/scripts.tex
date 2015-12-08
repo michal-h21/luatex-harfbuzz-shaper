@@ -9,29 +9,29 @@
 
 \newcommand\sampletext[2]{%
 \stopharfbuzz%
-{\luatextextdir TLT%
-  \luatexpardir TLT%
+{\textdir TLT%
+  \pardir TLT%
   \par\noindent\latin{#1 without Harfbuzz}}\par
 #2\par
 \startharfbuzz%
-{\luatextextdir TLT%
-  \luatexpardir TLT%
+{\textdir TLT%
+  \pardir TLT%
   \par\noindent\latin#1 with Harfbuzz}\par
 #2\par%
 }
-\newcommand\textlatin[1]{\bgroup\luatextextdir TLT #1\egroup}
+\newcommand\textlatin[1]{\bgroup\textdir TLT #1\egroup}
 
   \begin{document}
-\font\arab={Scheherazade} at 12pt
+  \font\arab={Scheherazade:+language=ara;+script=arab;} at 12pt
 \arab 
   \startharfbuzz
 %  
-\font\amiri={Amiri} at 12pt
+\font\amiri={Amiri:+language=ara;+script=arab;} at 12pt
 \amiri
 \SetFontOption{direction}{RTL}
 \SetFontOption{language}{ARA}
-\luatextextdir TRT
-\luatexpardir TRT
+\textdir TRT
+\pardir TRT
 
 \SetFontOption{language}{ARA}
 \sampletext{Arabic with Amiri}{براغ (بالتشيكية: \textlatin{Praha}، براها) هي عاصمة جمهورية التشيك وأكبر مدنها. تقع على نهر فلتافا في وسط منطقة بوهيميا التاريخية. بخلاف الكثير من مدن أوروبا الوسطى لم تدمر المدينة بشكل كبير في الحرب العالمية الثانية وحافظت على شكلها الجميل. يبلغ عدد سكان المدينة \textlatin{1.2} مليون نسمة وتصل مساحتها حوالي \textlatin{500} كم\textlatin{2.}}
@@ -41,7 +41,12 @@
 \sampletext{Arabic with Sheherazade}{براغ (بالتشيكية: \textlatin{Praha}، براها) هي عاصمة جمهورية التشيك وأكبر مدنها. تقع على نهر فلتافا في وسط منطقة بوهيميا التاريخية. بخلاف الكثير من مدن أوروبا الوسطى لم تدمر المدينة بشكل كبير في الحرب العالمية الثانية وحافظت على شكلها الجميل. يبلغ عدد سكان المدينة \textlatin{1.2} مليون نسمة وتصل مساحتها حوالي \textlatin{500} كم\textlatin{2.}}
 \SetFontOption{language}{URD}
 
+\font\urdu={Scheherazade:+script=arab;+language=URD} at 12pt
 \sampletext{Urdu}{پراگ (\textlatin{Prague}) چیک جمہوریہ کا دارالحکومت اور سیاسی، اقتصادی، تجارتی اور تعلیمی مرکز ہے۔ یہچیک جمہوریہ کا سب سے بڑا شہر بھی ہے۔ وسطی بوہیمیا میں دریائے ولتواوا کے کنارے واقع یہ شہر تقریبا \textlatin{12} لاکھ آبادی کا حامل ہے۔}
+
+\font\notourdu={Noto Nastaliq Urdu:+script=arab;+language=URD} at 12pt
+\notourdu
+\sampletext{Urdu with Noto}{پراگ (\textlatin{Prague}) چیک جمہوریہ کا دارالحکومت اور سیاسی، اقتصادی، تجارتی اور تعلیمی مرکز ہے۔ یہچیک جمہوریہ کا سب سے بڑا شہر بھی ہے۔ وسطی بوہیمیا میں دریائے ولتواوا کے کنارے واقع یہ شہر تقریبا \textlatin{12} لاکھ آبادی کا حامل ہے۔}
 
 %\font\amiri={Amiri} at 12pt
 %\amiri
@@ -50,26 +55,26 @@
 
 \sampletext{Pashtu}{پراگ ( په چیکی کې:\textlatin{Praha} ) د چېک د جمهوریت پایتخت دی او د چېک تر ټولو لوی ښار دی. مساحت یی تقریبا ۵۰۰ کیلومتره مربع ده. په اوس وخت کې پراگ تقریبا ۱،۲ میلیونه نفوس لری. پراگ هم د چېک جمهوریت ثقافتی او سیاسی مرکز دی. په پراگ کې د چېک جمهوریت تر ټولو لوی هوایی اډه پرته ده. د پراگ د ترافیک ترانسپورت ډیر عصری دی.}
 
-\font\ezra={Ezra Sil} at 10pt
+\font\ezra={Ezra Sil:+script=hebr;+language=IWR} at 10pt
 \ezra
 %\SetFontOption{script}{hebr}
 \SetFontOption{language}{IWR}
 
-\sampletext{Hebrew}{פראג )בצ'כית: \textlatin{Praha,} להאזנה )מידע · עזרה(( היא
+\sampletext{Hebrew}{פראג (בצ'כית: \textlatin{Praha,} להאזנה (מידע · עזרה)) היא
   בירת הרפובליקה הצ'כית והעיר הגדולה ביותר בה. פראג מהווה את המרכז הכלכלי,
-  התרבותי והתעשייתי של צ'כיה. היא ממוקמת על הנהר ולטאבה )\textlatin{Vltava}(,
+  התרבותי והתעשייתי של צ'כיה. היא ממוקמת על הנהר ולטאבה (\textlatin{Vltava}),
   ומאכלסת כ־\textlatin{1.2} מיליון תושבים. שטח המטרופולין של פראג
   \textlatin{6,977} קמ"ר. בין כינויה של פראג ניתן למנות את: "העיר בעלת מאות
   הצריחים המחודדים", "העיר הזהובה", "פריז של שנות העשרים בתשעים", "אם כל הערים"
   ו-"הלב של אירופה".}
 
-\font\siddhanta={Siddhanta} at 12pt
+\font\siddhanta={Siddhanta:+language=HIN;+script=deva} at 12pt
 \bigskip
 
 \siddhanta 
 %  
- \luatextextdir TLT
- \luatexpardir TLT
+ \textdir TLT
+ \pardir TLT
  \SetFontOption{language}{HIN}
  \SetFontOption{script}{}
 
@@ -78,7 +83,7 @@
 }
 
 
-\font\lohit={Lohit Tamil} at 12pt
+\font\lohit={Lohit Tamil:+script=tami;+language=TAM} at 12pt
 \lohit
 
 \font\heros={TeX Gyre Heros} at 10pt

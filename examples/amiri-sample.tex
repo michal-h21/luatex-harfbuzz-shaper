@@ -1,17 +1,17 @@
 \documentclass{article}
 \usepackage{harfbuzz}
-\newcommand\textlatin[1]{\bgroup\luatextextdir TLT #1\egroup}
+\newcommand\textlatin[1]{\bgroup\textdir TLT #1\egroup}
 \begin{document}
-\font\amiri={Amiri} at 12pt
+\font\amiri={Amiri:+script=arab;+language=ara} at 12pt
 \amiri
 \startharfbuzz
 
 %\SetFontOption{script}{arab}
-\SetFontOption{direction}{RTL}
+% \SetFontOption{direction}{RTL}
 
-\SetFontOption{language}{ARA}
-\luatextextdir TRT
-\luatexpardir TRT
+% \SetFontOption{language}{ARA}
+\textdir TRT
+\pardir TRT
 
 الخط الأميري 
 
@@ -25,8 +25,8 @@
 
 \font\tgschola={TeX Gyre Schola} at 12pt
 \tgschola
-\luatextextdir TLT
-\luatexpardir TLT
+\textdir TLT
+\pardir TLT
 
 Nazdar světe
 \end{document}
