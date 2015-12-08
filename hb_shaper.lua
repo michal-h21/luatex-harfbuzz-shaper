@@ -63,13 +63,13 @@ local function shape(text,fontoptions, dir, size)
     end
   end
   local features = table.concat(f, ",")
-  local options = {script = script, language = language, direction = direction, features = features}
   local buffer = Buffer.new()
   buffer:add_utf8(text)
   local Font = fontoptions.hb_font
+  local options = {script = script, language = language, direction = direction, features = features}
   harfbuzz.shape(Font, buffer, options)
   local newdir = buffer:get_direction()
-  print( script, newdir, lang, features)
+  print(text, script, newdir, lang, features)
   if newdir == "rtl" or  newdir == "RTL" then
     buffer:reverse()
   end
