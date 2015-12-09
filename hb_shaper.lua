@@ -59,7 +59,6 @@ end
 
 local feat_cache = {}
 local function parse_features(feat_str)
-  print("parse featY", feat_str)
   if feat_str == nil then return "" end
   local cached = feat_cache[feat_str]
   if cached then return cached end
