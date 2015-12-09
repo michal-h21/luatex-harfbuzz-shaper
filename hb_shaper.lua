@@ -3,6 +3,15 @@ local harfbuzz = require "harfbuzz"
 local Buffer = harfbuzz.Buffer
 local usedfonts = {}
 
+-- harfbuzz processing can be disabled using attributes
+local luatexbase = luatexbase or {}
+luatexbase.registernumber = luatexbase.registernumber or function(s) return false end
+local hb_attr = luatexbase.registernumber("harfbuzzenabled")
+local hb_enabled = 1
+local hb_disabled = 0
+
+print("harfbuzz attr no", hb_attr)
+
 M.options = {font =  "TeX Gyre Termes", weight = 200,script = "", direction = "LTR", language = "en", size = 10, features = "+liga", variant = "normal"}
 
 
@@ -241,7 +250,7 @@ M.process_nodes = function(head,groupcode)
   end
   for n in node.traverse(head) do
     current_node = node.copy(n)
-    if n.id ==glyph_id then
+    if n.id ==glyph_id and node.has_attribute(n, hb_attr, hb_enabled)  then
       M.save_options(n.font)
       local _,face = M.get_font(n.font)
       -- process only fonts loaded by Harfbuzz

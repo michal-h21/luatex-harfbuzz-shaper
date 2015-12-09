@@ -1,32 +1,37 @@
 \ProvidesPackage{harfbuzz}
 \RequirePackage{luacode,luatexbase}
+\newattribute\harfbuzzenabled
 
+\harfbuzzenabled=1
 \begin{luacode*}
   require "hb_paths"
   require "hb_lualoader"
   luaharfbuzz = require "hb_shaper"
   local fontloader = require "hb_fontload"
-   luatexbase.add_to_callback("define_font",fontloader.loader, "font loader")
+  luatexbase.add_to_callback("define_font",fontloader.loader, "font loader")
+  luatexbase.add_to_callback("pre_linebreak_filter",luaharfbuzz.process_nodes, "harfbuzz")
 \end{luacode*}
 
 \newcommand\startharfbuzz{%
 %\begin{luacode*}
-\luaexec{
-  luatexbase.add_to_callback("pre_linebreak_filter",luaharfbuzz.process_nodes, "harfbuzz")
-  -- this fails
-  luatexbase.add_to_callback("hpack_filter",luaharfbuzz.process_nodes, "harfbuzz_hpack")
-}
+% \luaexec{
+%   luatexbase.add_to_callback("pre_linebreak_filter",luaharfbuzz.process_nodes, "harfbuzz")
+%   -- this fails
+%   luatexbase.add_to_callback("hpack_filter",luaharfbuzz.process_nodes, "harfbuzz_hpack")
+% }
 %\end{luacode*}%
+\harfbuzzenabled=1
 }
 
 \newcommand\stopharfbuzz{%
 %\begin{luacode*}
-\luaexec{%
-  luatexbase.remove_from_callback("pre_linebreak_filter","harfbuzz")
-  -- hbox processing sometimes fails
-  luatexbase.remove_from_callback("hpack_filter","harfbuzz_hpack")
-}
+% \luaexec{%
+%   luatexbase.remove_from_callback("pre_linebreak_filter","harfbuzz")
+%   -- hbox processing sometimes fails
+%   luatexbase.remove_from_callback("hpack_filter","harfbuzz_hpack")
+% }
 %\end{luacode*}%
+\harfbuzzenabled=0
 }
 
 \newcommand\SetFontOption[2]{%
