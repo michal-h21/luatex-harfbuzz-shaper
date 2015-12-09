@@ -65,7 +65,7 @@ seem to be supported fully.
 
     \end{document}
 
-![Resulting document](http://i.imgur.com/bp8IfKH.png)
+![Resulting document](http://i.imgur.com/kZFsEzt.png)
 
 Fonts are loaded using `Luaotfload` libraries, which means that you can use
 fonts in both your system font directories and in TeX tree. Also, `Luatfload` syntax
