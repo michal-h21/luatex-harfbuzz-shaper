@@ -41,7 +41,7 @@ local current_options = nil
 -- set Harfbuzz options for a font
 M.set_font_option = function(name, value)
   current_options = current_options or {}
-  if value == "" then value = nil end
+  -- if value == "" then value = nil end
   current_options[name] = value
 end
 
@@ -59,6 +59,7 @@ end
 
 local feat_cache = {}
 local function parse_features(feat_str)
+  print("parse featY", feat_str)
   if feat_str == nil then return "" end
   local cached = feat_cache[feat_str]
   if cached then return cached end
