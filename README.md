@@ -4,7 +4,8 @@ You need to install [Luaharfbuzz](https://github.com/deepakjois/luaharfbuzz)
 first. It  is best to use `luarocks` option, as we can load it directly. 
 
 
-Run `make` to set correct paths in which `luaharfbuzz` will be searched. 
+Run `make install` to set correct paths in which `luaharfbuzz` will be
+searched. The library will be installed in yout local TEXMF tree.
 
 ## About
 
