@@ -55,7 +55,7 @@ seem to be supported fully.
     Arabic text
 
     {\pardir TRT \textdir TRT
-    \arabic ﻢﻗﺎﻟﺓ ﺎﻠﻳﻮﻣ ﺎﻠﻤﺨﺗﺍﺭﺓ}
+    \arabic مقالة اليوم المختارة}
 
    
 
