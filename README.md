@@ -81,14 +81,12 @@ See files in `examples` directory for various examples of usage.
 
 ## Questions and issues
 
-- hyphenation seems to work, but words are hyphenated before processing with
-  Harfbuzz. Because only directly following glyph nodes are aaken as words,
-  actual word may be broken into several chunks for Harbuzz processing. It
-  probably isn't problem for latin typefaces, but what about complex scripts?
-- what about kerning? 
-- how to support complex scripts such as Arabic, where glyphs depends even on
-  things like line start/end, hyphenation, etc.? Basic Arabic processing seems
-  to work.
+- Hyphenation works, except for ligatures. We need to investigate how to detect
+  ligatures and how to create discretionaries needed by LuaTeX in order to
+  enable hyphenation 
+- kerning seems to work
+- complex scripts such as Arabic seems to work, even Urdu
+- how to handle font expansion and protrusion?
 - `pdffonts` command reports this error message on `examples/scripts.pdf`:
 
         $ Syntax Error (103800): Dictionary key must be a name object
@@ -99,4 +97,4 @@ See files in `examples` directory for various examples of usage.
         Syntax Error (104253): Dictionary key must be a name object
 
 
-  I have no idea what it means
+  I have no idea what it means, but something is wrong with the fontloader
