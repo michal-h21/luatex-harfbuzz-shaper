@@ -50,14 +50,11 @@ end
 
 local feat_cache = {}
 local function parse_features(feat_str)
-  if feat_str == nil then return {} end
+  if feat_str == nil then return "" end
   local cached = feat_cache[feat_str]
   if cached then return cached end
-  local feat = {}
-  for feature in feat_str:gmatch("(%+[%a0-9]+)") do
-    print("insert feature", feature)
-    feat[#feat+1] = feature
-  end
+  -- semicolons are used in luaotfload to separate features, harfbuzz uses commas
+  local feat = feat_str:gsub(";",",")  
   feat_cache[feat_str] = feat
   return feat
 end
@@ -75,18 +72,21 @@ local function shape(text,fontoptions, dir, size)
   local lang = docoptions.language or feat.language
   local size = size
   local f = {}
-  -- font features
+  -- font features passed from luaotfload
   for k,v in pairs(feat) do
     if v == true then
       table.insert(f, "+"..k)
+    elseif v==false then 
+      table.insert(f, "-"..k)
+      -- we must remove script and language, they aren't valid features
+    elseif k=="script" or k=="language" then
+    else
+      table.insert(f, string.format("+%s=%s",k,v))
     end
   end
   -- features specified in \SetFontOption
-  local doc_feat = docoptions.features
-  for k,v in ipairs(parse_features(doc_feat)) do
-    f[#f+1] = v
-  end
-  local features = table.concat(f, ",")
+  local doc_feat = parse_features(docoptions.features)
+  local features = table.concat(f, ",") .. ","..doc_feat
   local buffer = Buffer.new()
   buffer:add_utf8(text)
   local Font = fontoptions.hb_font
