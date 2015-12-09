@@ -42,7 +42,7 @@ seem to be supported fully.
 
     \SetFontOption{features}{+smcp}
 
-    Hello world
+    Hello world in small caps
 
     \font\italic={Linux Libertine O/I} at 12pt
 
