@@ -2,3 +2,4 @@
 *.aux
 hb_test.lua
 hb_paths.lua
+*.swp
