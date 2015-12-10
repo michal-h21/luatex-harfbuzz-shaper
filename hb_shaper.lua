@@ -96,6 +96,24 @@ local kernfn = {
       print("kern", char, n.width, x_advance)
     end
     return nodetable
+  end,
+  -- this is workn in progress
+  ttb = function(nodetable, n, calcfield)
+    -- local x_advance = calcfield "x_advance"
+    local y_advance = calcfield "y_advance"
+    local total  = ((n.height + n.depth) + y_advance) * -1
+    local char = utfchar(n.char)
+    local glue = node.new "glue"
+    local gs = node.new "glue_spec"
+    gs.width = total
+    gs.stretch=total 
+    gs.stretch_order=0;
+    gs.shrink=0.05 * n.width
+    gs.shrink_order=0;
+    glue.spec = gs
+    print(char, n.width,  n.height, n.depth,  y_advance, total)
+    nodetable[#nodetable+1] = glue
+    return nodetable
   end
 }
 
