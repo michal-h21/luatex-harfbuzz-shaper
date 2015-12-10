@@ -191,7 +191,8 @@ end
 -- we should allow the processing only for some cases, which are enabled in
 -- processed_groupcodes table
 -- process only main vertical list by default
-M.processed_groupcodes = {[""]=true}
+-- "vbox" groupcode fails. why?
+M.processed_groupcodes = {[""]=true, hbox=true, adjusted_hbox=true, align_set=true, fin_row=true}
 M.process_nodes = function(head,groupcode) 
   local newhead_table = {}
   local current_text = {}
@@ -214,6 +215,8 @@ M.process_nodes = function(head,groupcode)
     return directions[dir] or dir
   end
   local direction --= convert_dir(tex.textdir)
+  -- should this be removed? This is really messy when \halligns and other stuff
+  -- is involved
   local proc_groupcodes = M.processed_groupcodes
   if not proc_groupcodes[groupcode] then
     return head
