@@ -68,6 +68,36 @@ local function parse_features(feat_str)
   return feat
 end
 
+-- different kerning functions for different directions
+local kernfn = {
+  ltr = function(nodetable, n, calcfield)
+    local x_advance = calcfield "x_advance"
+    if x_advance and math.abs(x_advance - n.width) > 1 then
+      local char = utfchar(n.char)
+      local kern = node.new "kern"
+      -- this formula is good for latin text, but what about TRL
+      kern.kern = (x_advance - n.width  ) 
+      -- really this? I am not sure why
+      nodetable[#nodetable+1] = kern
+      print("kern", char, n.width, x_advance)
+    end
+    return nodetable
+  end,
+  rtl = function(nodetable, n, calcfield)    
+    local x_advance = calcfield "x_advance"
+    if x_advance and math.abs(x_advance - n.width) > 1 then
+      local char = utfchar(n.char)
+      local kern = node.new "kern"
+      kern.kern = (n.width - x_advance) * -1
+      -- it seems that kerns are inserted wrongly for RTL, we must fix it
+      local pos = #nodetable --- 1
+      if pos < 1 then pos = 1 end
+      table.insert(nodetable,pos, kern)
+      print("kern", char, n.width, x_advance)
+    end
+    return nodetable
+  end
+}
 
 local function shape(text,fontoptions, dir, size)
   local specification = fontoptions.spec
@@ -124,6 +154,7 @@ M.make_nodes = function(text, nodeoptions, options)
   --   harfbuzz._shape(text,face,options.script, options.direction,
   --     options.language, options.size, options.features)
   -- }
+  local get_kern = kernfn[direction] or function(nodetable) return nodetable end
   local nodetable = {}
   for _, v in ipairs(result) do
     -- character from backmap is sometimes too big for unicode.utf8.char
@@ -156,25 +187,8 @@ M.make_nodes = function(text, nodeoptions, options)
     nodetable[#nodetable+1] = node.copy(n)
     -- detect kerning
     -- we must rule out rounding errors first
-    if x_advance and math.abs(x_advance - n.width) > 1 then
-      local kern = node.new "kern"
-      -- this formula is good for latin text, but what about TRL
-      if factor > 0 then 
-        kern.kern = (x_advance - n.width  ) * factor
-      else
-        -- really this? I am not sure why
-        kern.kern = (n.width - x_advance) * factor
-      end
-      -- it seems that kerns are inserted wrongly for RTL, we must fix it
-      if factor < 0 then
-        local pos = #nodetable --- 1
-        if pos < 1 then pos = 1 end
-        table.insert(nodetable,pos, kern)
-      else
-        nodetable[#nodetable+1] = kern
-      end
-      print("kern", char, n.width, x_advance)
-    end
+    -- we skip this for top to bottom direction
+    nodetable = get_kern(nodetable, n, calc_dim)
   end--]]
   return nodetable
 end
