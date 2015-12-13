@@ -126,6 +126,27 @@ local kernfn = {
   end
 }
 
+local function reshape(text, nodeoptions, options,fontoptions)
+  local buf = Buffer.new()
+  buf:add_utf8(text)
+  buf:guess_segment_properties()
+  local script =  buf:get_script()
+  script = script:lower()
+  local opt = fontoptions.options or {}
+  local newfont = opt[script] or -1
+  if newfont > -1 then 
+    print ("Reshaping using ".. script .. " font")
+    local newnodeopts = {}
+    for k,v in pairs(nodeoptions) do newnodeopts[k] = v end
+    newnodeopts.font = newfont
+    return M.make_nodes(text, newnodeopts, options)
+  end
+  print "No substitute font"
+  return nil
+end
+
+
+
 local function shape(text,fontoptions, dir, size)
   local specification = fontoptions.spec
   local feat = specification.features
@@ -184,9 +205,10 @@ M.make_nodes = function(text, nodeoptions, options)
   local get_kern = kernfn[direction] or function(nodetable) return nodetable end
   local nodetable = {}
   for _, v in ipairs(result) do
-    -- character from backmap is sometimes too big for unicode.utf8.char
-    -- it is because it is often PUA
-    -- print("hf",v.name) -- , utfchar(fontoptions.backmap[v.codepoint]))
+    if v.codepoint==0 then
+      print("Detected missing glyph", text)
+      return reshape(text, nodeoptions, options, fontoptions)
+    end
     local n
     local char =  fontoptions.backmap[v.codepoint]
     n = node.new("glyph")
