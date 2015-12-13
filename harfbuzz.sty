@@ -39,9 +39,21 @@
 \newcommand\SetFontOption[2]{%
   \luaexec{%
     % luaharfbuzz.options["\luatexluaescapestring{#1}"]="\luatexluaescapestrya"ing{#2}"
-    luaharfbuzz.set_font_option("\luatexluaescapestring{#1}", "\luatexluaescapestring{#2}")
+    luaharfbuzz.set_font_option("\luatexluaescapestring{#1}","\luatexluaescapestring{#2}")%
     luaharfbuzz.save_options(font.current())
   }
+}
+
+% first parameter script, second font command
+\newcommand\SetFontSubstitute[2]{%
+  % \bgroup%
+    \luaexec{%
+    local fntname = "\luatexluaescapestring{#2}"
+    local backshash = string.char(92)
+    fntname = fntname:gsub(backshash, ""):gsub(" ","")
+    luaharfbuzz.set_font_option("\luatexluaescapestring{#1}",font.id(fntname))
+    luaharfbuzz.save_options(font.current())
+    }%
 }
 
 \endinput
