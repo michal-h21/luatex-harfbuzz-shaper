@@ -77,6 +77,28 @@ obviously. To enable text shaping, use `\startharfbuzz`, to stop it, use
 You can set harfbuzz options with `\SetFontOption`, most useful options are
 `features`, `script` and `language`. All values must be valid OpenType names.
 
+For missing glyph substitution, use `\SetFontSubstitute`. It has two
+parameters, first is script, for which font should be used, second is font to
+be used.
+
+`\SetFontOption` and `\SetFontSubstitute` must be used when the configured font is used, it means not directly after declaration with `\font`, but 
+after it is really used in the document:
+
+
+    \documentclass{article}
+    \usepackage{harfbuzz}
+    \font\latin={TeX Gyre Schola} at 18pt
+    \font\noto={Noto Nastaliq Urdu:script=arab;language=URD} at 18pt
+    \def\textlatin#1{\bgroup\textdir TLT #1\egroup}
+    \begin{document}
+    \pagedir TRT \bodydir TRT \pardir TRT \textdir TRT
+    
+    \noto
+    \SetFontSubstitute{latn}{\latin}
+    \SetFontOption{ahoj}{Tak co?}
+    پراگ (\textlatin{Prague}) چیک جمہوریہ کا
+    \end{document}
+
 See files in `examples` directory for various examples of usage.
 
 ## Questions and issues
