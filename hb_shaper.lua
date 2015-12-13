@@ -23,9 +23,14 @@ local disc_id = node.id "disc"
 local kern_id = node.id "kern"
 local penalty_id = node.id "penalty"
 
+local max_char = 0x10FFFF
 local utfchar =  function(x)
   -- print(x)
-  return unicode.utf8.char(x) or x
+  if x <= max_char then
+    return unicode.utf8.char(x) or x
+  else
+    return " "
+  end
 end
 
 -- helper function to get font options and font face
