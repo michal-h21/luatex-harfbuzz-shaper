@@ -54,9 +54,6 @@ config.actions.apply_defaults()
 -- local lpegmatch = lpeg.match
 
 -- local resolve_cached = fonts.names.resolve_cached
-for k,_ in pairs(fonts.names) do
-  print("fonts names", k)
-end
 
 local resolve_cached = fonts.names.lookup_font_name_cached
 local handle_request = fonts.names.handle_request
