@@ -205,6 +205,7 @@ M.make_nodes = function(text, nodeoptions, options)
   local get_kern = kernfn[direction] or function(nodetable) return nodetable end
   local nodetable = {}
   for _, v in ipairs(result) do
+    -- do reshape if missing glyph is detected. Whole word is reshaped
     if v.codepoint==0 then
       print("Detected missing glyph", text)
       return reshape(text, nodeoptions, options, fontoptions)
@@ -212,8 +213,6 @@ M.make_nodes = function(text, nodeoptions, options)
     local n
     local char =  fontoptions.backmap[v.codepoint]
     n = node.new("glyph")
-    --n.font = fontid
-    --n.lang = language
     -- set node properties
     for k,j in pairs(nodeoptions) do
       n[k] = j
