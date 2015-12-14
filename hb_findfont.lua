@@ -27,12 +27,20 @@ local backup = {
 
 local luaotfloadloader = function(name)
   local mod = require(name)
-  mod.init()
+  if type(mod) == "table" and mod.init then
+    mod.init()
+  end
 end
 
 fonts = fonts or {}
+fonts.encodings = fonts.encodings or {}
+fonts.encodings.agl = fonts.encodings.agl or {}
 texio.write, texio.write_nl          = dummy_function, dummy_function                                                                                 
-require"fontloader-basics-gen.lua"                                                                                                                    
+if kpse.find_file("luaotfload-basics-gen.lua") then
+  require "luaotfload-basics-gen"
+else
+  require "fontloader-basics-gen" 
+end
 
 texio.write, texio.write_nl          = backup.write, backup.write_nl                                                                                  
 utilities                            = backup.utilities                                                                                               
@@ -55,7 +63,7 @@ config.actions.apply_defaults()
 
 -- local resolve_cached = fonts.names.resolve_cached
 
-local resolve_cached = fonts.names.lookup_font_name_cached
+local resolve_cached = fonts.names.lookup_font_name_cached or fonts.names.resolve_cached
 local handle_request = fonts.names.handle_request
 local resolve_fullpath = fonts.names.getfilename
 
