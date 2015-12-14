@@ -6,6 +6,7 @@
 % to see what does hyphenation
 \textwidth=20em
 \usepackage{harfbuzz}
+\usepackage{url}
 % polyglossia doesn't work. it calls fontspec
 %\usepackage{polyglossia}
 % \begin{luacode*}
@@ -33,12 +34,14 @@
 \selectlanguage{english}
 \frenchspacing % two spaces after dot are horrible
 
-\font\siddhanta={Siddhanta} at 12pt
+\font\siddhanta={Siddhanta:script=deva;language=HIN} at 12pt
 \bigskip
 
 \siddhanta 
 
 Normal devanagari shaping: 
+
+\stopharfbuzz
 
 ॥ धर्मो रक्षति रक्षितः ॥
 
@@ -99,19 +102,14 @@ don't work. These must be processed separately from Lua callbacks).
 It works with this font, but fails with ``Amiri''. 
 
 \siddhanta
-So we can rather try some Devanagari, the text is copied from a comment on http://svayambhava.\-blogspot.com\-/p\--/\-sidd\-hanta-\-deva\-na\-ga\-ri\-unicode-\-open\-type.html
+\def\UrlFont{\siddhanta}
+So we can rather try some Devanagari, the text is copied from Wikipedie\footnote{\url{https://hi.wikipedia.org/wiki/चेक_गणराज्य}}
 
 %  \begin{luacode*}
 %  fl.options.script = "dflt"
 %  \end{luacode*}
 
-महोदय,
-मैं भी काशी के संपूर्णानन्द संस्कृत विश्वविद्यालय से हूँ। आप भी काशी में रहे हैं।
-निवेदन है कि वैदिका फॉन्ट बहुत उपयोगी है। वाक्यों में (अ) का प्रयोग कम और (ा) मात्रा का प्रयोग बहुत होता है और (ा) को टाइप करने के लिए बार बार शिफ्ट A दबाना पड़ता है। यदि (अ) को शिफ्ट A के साथ तथा (ा) को बिना शिफ्ट a के साथ रखा जाय तो बहुत सुविधा होगी।
-धन्यवाद।
-
-आपका
-आचार्य रामप्यारे सिंह शास्त्री
+चेक गणराज्य मध्य यूरोप में स्थित है। यह सभी ओर से ज़मीन से घिरा हुआ है (अर्थात इसकी किसी सीमा पर समुद्र या महासागर नहीं है)। इसकी सीमाएँ पोलैंड, जर्मनी, ऑस्ट्रिया और स्लोवाकिया से मिलती हैं। इसके मुख्य तीन भाग हैं बोहीमिया, मोराविया और साइलीसिया। राष्ट्र का कुल क्षेत्रफल 30,450 वर्ग मील है, जिसमें से 20,367 वर्ग मील बोहीमिया में हैं। देश की राजधानी प्राग मध्य बोहीमिया में स्थित है।
 
 \font\gentium={Gentium} at 12 pt
 % this tries to load bad font, error occurs

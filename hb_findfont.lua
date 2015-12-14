@@ -25,16 +25,32 @@ local backup = {
   utilities = utilities,                                                                                                                            
 }                                                                                                                                                     
 
+local luaotfloadloader = function(name)
+  local mod = require(name)
+  if type(mod) == "table" and mod.init then
+    mod.init()
+  end
+end
+
+fonts = fonts or {}
+fonts.encodings = fonts.encodings or {}
+fonts.encodings.agl = fonts.encodings.agl or {}
 texio.write, texio.write_nl          = dummy_function, dummy_function                                                                                 
-require"luaotfload-basics-gen.lua"                                                                                                                    
+if kpse.find_file("luaotfload-basics-gen.lua") then
+  require "luaotfload-basics-gen"
+else
+  require "fontloader-basics-gen" 
+end
 
 texio.write, texio.write_nl          = backup.write, backup.write_nl                                                                                  
 utilities                            = backup.utilities                                                                                               
 
 require "luaotfload-log.lua"       --- this populates the luaotfload.log.* namespace                                                                  
-require "luaotfload-parsers"       --- fonts.conf, configuration, and request syntax                                                                  
-require "luaotfload-configuration" --- configuration file handling    
-require "luaotfload-database"
+luaotfloadloader "luaotfload-parsers"       --- fonts.conf, configuration, and request syntax                                                                  
+-- parsers.init()
+luaotfloadloader "luaotfload-configuration" --- configuration file handling    
+-- configuration.init()
+luaotfloadloader "luaotfload-database"
 require "hb_lotfl_fix_features"
 
 -- load default configuration
@@ -45,7 +61,9 @@ config.actions.apply_defaults()
 -- local lpeg = lpeg
 -- local lpegmatch = lpeg.match
 
-local resolve_cached = fonts.names.resolve_cached
+-- local resolve_cached = fonts.names.resolve_cached
+
+local resolve_cached = fonts.names.lookup_font_name_cached or fonts.names.resolve_cached
 local handle_request = fonts.names.handle_request
 local resolve_fullpath = fonts.names.getfilename
 

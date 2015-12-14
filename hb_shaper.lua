@@ -23,9 +23,14 @@ local disc_id = node.id "disc"
 local kern_id = node.id "kern"
 local penalty_id = node.id "penalty"
 
+local max_char = 0x10FFFF
 local utfchar =  function(x)
   -- print(x)
-  return unicode.utf8.char(x) or x
+  if x <= max_char then
+    return unicode.utf8.char(x) or x
+  else
+    return " "
+  end
 end
 
 -- helper function to get font options and font face
@@ -98,10 +103,11 @@ local kernfn = {
     return nodetable
   end,
   -- this is workn in progress
+  -- and it doesn't seem to work at all
   ttb = function(nodetable, n, calcfield)
     -- local x_advance = calcfield "x_advance"
     local y_advance = calcfield "y_advance"
-    local total  = ((n.height + n.depth) + y_advance) * -1
+    local total  = ((n.height + n.depth) + y_advance) -- * -1
     local char = utfchar(n.char)
     local glue = node.new "glue"
     local gs = node.new "glue_spec"
@@ -111,8 +117,11 @@ local kernfn = {
     gs.shrink=0.05 * n.width
     gs.shrink_order=0;
     glue.spec = gs
+    local kern = node.new "kern"
+    kern.kern = total * -1
     print(char, n.width,  n.height, n.depth,  y_advance, total)
     nodetable[#nodetable+1] = glue
+    -- nodetable[#nodetable+1] = kern
     return nodetable
   end
 }
