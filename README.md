@@ -95,7 +95,6 @@ after it is really used in the document:
     
     \noto
     \SetFontSubstitute{latn}{\latin}
-    \SetFontOption{ahoj}{Tak co?}
     پراگ (\textlatin{Prague}) چیک جمہوریہ کا
     \end{document}
 
