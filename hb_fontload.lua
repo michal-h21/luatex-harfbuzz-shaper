@@ -60,6 +60,7 @@ function M.loader(specification, size)
     if ttffont then
       f = { }
       f.name = ttffont.fontname
+      f.psname = f.name
       f.spec = spec
       if spec.fullpath then
         f.face = Face.new(spec.fullpath)
