@@ -60,6 +60,7 @@ function M.loader(specification, size)
     if ttffont then
       f = { }
       f.name = ttffont.fontname
+      f.psname = f.name
       f.spec = spec
       if spec.fullpath then
         f.face = Face.new(spec.fullpath)
@@ -84,17 +85,20 @@ function M.loader(specification, size)
       -- local utfchar = unicode.utf8.char
       local names_of_char = { }
       for char, glyph in pairs(ttffont.map.map) do
-        names_of_char[ttffont.glyphs[glyph].name] = ttffont.map.backmap[glyph]
+        if ttffont.glyphs[glyph] then
+          names_of_char[ttffont.glyphs[glyph].name] = ttffont.map.backmap[glyph]
+        end
         -- print(glyph,ttffont.glyphs[glyph].name,utfchar(ttffont.map.backmap[glyph]))
       end
       -- save backmap in TeX font, so we can get char code from glyph index
       -- obtainded from Harfbuzz
       f.backmap = ttffont.map.backmap
       for char, glyph in pairs(ttffont.map.map) do
-        local glyph_table = ttffont.glyphs[glyph]
+        local glyph_table = ttffont.glyphs[glyph] or {}
+        glyph_table.boundingbox = glyph_table.boundingbox or {}
         f.characters[char] = {
           index = glyph,
-          width = glyph_table.width * mag,
+          width = (glyph_table.width or f.size) * mag,
           name = glyph_table.name,
           -- x_offset = (glyph_table.x_offset or 0) * mag,
           -- y_offset = (glyph_table.y_offset or 0) * mag,
