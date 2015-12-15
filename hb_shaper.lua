@@ -126,26 +126,6 @@ local kernfn = {
   end
 }
 
-local function reshape(text, nodeoptions, options,fontoptions)
-  local buf = Buffer.new()
-  buf:add_utf8(text)
-  buf:guess_segment_properties()
-  local script =  buf:get_script()
-  script = script:lower()
-  local opt = fontoptions.options or {}
-  local newfont = opt[script] or -1
-  if newfont > -1 then 
-    print ("Reshaping using ".. script .. " font")
-    local newnodeopts = {}
-    for k,v in pairs(nodeoptions) do newnodeopts[k] = v end
-    newnodeopts.font = newfont
-    return M.make_nodes(text, newnodeopts, options)
-  end
-  print "No substitute font"
-  return nil
-end
-
-
 
 local function shape(text,fontoptions, dir, size)
   local specification = fontoptions.spec
@@ -187,6 +167,94 @@ local function shape(text,fontoptions, dir, size)
   -- return {harfbuzz._shape(text,specification.data, 0,  script, direction, lang, size, features)}
   return buffer:get_glyph_infos_and_positions(), newdir
 end
+-- We should work with graphemes in reshaping
+local glen = unicode.grapheme.len
+local ulen = unicode.utf8.len
+local gpos = unicode.grapheme.sub
+
+-- function reshape is called only when a word contains some glyph unsupported by a font
+-- we will make graphemes, test each for shapping support, join graphemes with the same category
+-- (shaped/unshaped) and shape them separatelly
+local function reshape(text, nodeoptions, options,fontoptions)
+  local function make_graphemes(text)
+    local t = {}
+    for i = 1, glen(text) do
+      t[#t+1] = gpos(text, i, i)
+    end
+    return t
+  end
+  local function guess_script(text)
+    local buf = Buffer.new()
+    buf:add_utf8(text)
+    buf:guess_segment_properties()
+    local script =  buf:get_script()
+    return script:lower()
+  end
+  local function shape_graphemes(graphemes)
+    local t = {}
+    local dir = options.dir
+    local size = fontoptions.size
+    for k, v in pairs(graphemes) do 
+      local res = shape(v, fontoptions, dir, size)
+      -- shape returns table with one element in this case
+      local element = res[1]
+      -- save current grapheme to table
+      local a = {text = v}
+      if element.codepoint == 0 then
+        -- save script only for unshaped glyphs
+        a.script = guess_script(v)
+      end
+      t[#t+1] = a
+    end
+    return t
+  end
+  -- process grapheme table and join graphemes with same script
+  local function join_scripts(shapes, results, i)
+    local i = i or 1
+    if i > #shapes then return results end
+    local shapes = shapes or {}
+    local results = results or {}
+    local t = {}
+    local curr_script = shapes[i].script
+    while i<=#shapes and shapes[i].script == curr_script  do
+      t[#t+1] = shapes[i].text
+      i = i + 1
+    end
+    local new = {text = table.concat(t), script = curr_script}
+    results[#results+1] = new
+    return join_scripts(shapes, results, i)
+  end
+  -- get table with all graphemes and their scripts
+  local shapes = shape_graphemes(make_graphemes(text))
+  local segments = join_scripts(shapes)
+  local newnodes = {}
+  local opt = fontoptions.options or {}
+  for k,v in ipairs(segments) do
+    print("Segment", v.text, v.script)
+    local script = v.script
+    local newfont
+    if script then
+      newfont = opt[script] or -1
+    end
+    print ("Reshaping using ".. (script or "-") .. " font")
+    local newnodeopts = {}
+    for k,v in pairs(nodeoptions) do newnodeopts[k] = v end
+    if newfont and newfont > -1 then 
+      newnodeopts.font = newfont
+    end
+    
+    local curr_nodes =  M.make_nodes(text, newnodeopts, options)
+    for _,y in ipairs(curr_nodes) do newnodes[#newnodes+1] = y end
+  end
+  if #newnodes>0 then
+    return newnodes
+  end
+  print "No substitute font"
+  return nil
+end
+
+
+
   -- nodeoptions are options for glyph nodes
 -- options are for harfbuzz
 M.make_nodes = function(text, nodeoptions, options)
