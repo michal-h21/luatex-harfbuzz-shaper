@@ -243,7 +243,7 @@ local function reshape(text, nodeoptions, options,fontoptions)
       newnodeopts.font = newfont
     end
     
-    local curr_nodes =  M.make_nodes(text, newnodeopts, options)
+    local curr_nodes =  M.make_nodes(v.text, newnodeopts, options)
     for _,y in ipairs(curr_nodes) do newnodes[#newnodes+1] = y end
   end
   if #newnodes>0 then
