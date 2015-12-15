@@ -188,6 +188,8 @@ local function reshape(text, nodeoptions, options,fontoptions)
     buf:add_utf8(text)
     buf:guess_segment_properties()
     local script =  buf:get_script()
+    -- use latn as default script when detection fails
+    if script == "" then script = "latn" end
     return script:lower()
   end
   local function shape_graphemes(graphemes)
