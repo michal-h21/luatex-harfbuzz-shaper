@@ -3,3 +3,4 @@
 hb_test.lua
 hb_paths.lua
 *.swp
+/*.pdf
