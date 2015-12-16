@@ -1,5 +1,8 @@
 \ProvidesPackage{harfbuzz}
 \RequirePackage{luacode,luatexbase}
+
+% use fontspec encoding for LuaLaTeX
+% This may be needed 
 \newattribute\harfbuzzenabled
 
 \harfbuzzenabled=1
@@ -54,6 +57,40 @@
     luaharfbuzz.set_font_option("\luatexluaescapestring{#1}",font.id(fntname))
     luaharfbuzz.save_options(font.current())
     }%
+
+
+% Simple font selection scheme
+\RequirePackage[EU2]{fontenc}
+\newcommand\HbDeclareShape[5]{%
+\DeclareFontShape{EU2}{#1}{#2}{#3}%
+     {<-> "#4\if\relax\detokenize{#5}\relax\else:#5\fi"}{}%
+   }
+ 
+
+\newcommand\HbDeclareFamily[3]{%
+  \DeclareFontFamily{EU2}{#3}{}
+  % \DeclareFontShape{EU2}{hbrm}{m}{n}{<-> "#2"}{}
+  \HbDeclareShape{#3}{m}{n}{#2}{#1}
+  \HbDeclareShape{#3}{m}{it}{#2/I}{#1}
+  \HbDeclareShape{#3}{bx}{n}{#2/B}{#1}
+  \HbDeclareShape{#3}{bx}{it}{#2/BI}{#1}
+  \HbDeclareShape{#3}{m}{sc}{#2}{#1+smcp}
+}
+
+\newcommand\MainFamily[2][]{%
+  \HbDeclareFamily{#1}{#2}{hbrm}
+  \renewcommand{\rmdefault}{hbrm}%
+}
+
+\newcommand\SansFamily[2][]{%
+  \HbDeclareFamily{#1}{#2}{hbsf}
+  \renewcommand{\sfdefault}{hbsf}
+}
+
+
+\newcommand\MonoFamily[2][]{%
+  \HbDeclareFamily{#1}{#2}{hbtt}
+  \renewcommand{\ttdefault}{hbtt}
 }
 
 \endinput

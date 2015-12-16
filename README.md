@@ -67,6 +67,37 @@ seem to be supported fully.
 
 ![Resulting document](http://i.imgur.com/kZFsEzt.png)
 
+# LaTeX font selection commands
+
+You can define font families which can be used in standard LaTeX commands such
+as `\textit`, `\textbf` or `\textsc`. The commands are:
+
+    \MainFamily[font options]{font name}
+    \SansFamily[font options]{font name}
+    \MonoFamily[font options]{font name}
+
+example:
+
+
+    \documentclass{article}
+    \usepackage{harfbuzz}
+    \MainFamily[script=latn;+onum;]{TeX Gyre Termes}
+    \MonoFamily{Inconsolatazi4}
+    
+    \begin{document}
+    \section{Section}
+    Ligatures: finance 12345 \textit{diacritics: příliš} {\itshape font switch} 
+    \textsc{Small caps} \textit{\textbf{bold italic} italic} \texttt{monospace}
+    
+    \begin{verbatim}
+      for k,v in ipairs(t) do print(k,v) end
+    \end{verbatim}
+    
+    \[ \frac{\sqrt{a^2 +b ^ 2}}{c^2} \]
+    \end{document}
+
+![Result](http://i.imgur.com/wZJTZqW.png)
+
 Fonts are loaded using `Luaotfload` libraries, which means that you can use
 fonts in both your system font directories and in TeX tree. Also, `Luatfload` syntax
 `\font\fontname= {System font name/Style:features} at size` is supported.
