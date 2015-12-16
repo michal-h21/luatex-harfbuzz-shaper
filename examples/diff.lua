@@ -23,23 +23,33 @@ local function compute_diff(t1,t2)
   return t3
 end
 
+local function get_table_part(t,x,y)
+  local n = {}
+  for i=x,y do
+    n[#n+1] = t[i]
+  end
+  return n
+end
+
 local function get_diff(t1,t2)
   local diffs = compute_diff(t1, t2)
   local result = {}
   for i,v in ipairs(diffs) do
     if v > 0 then
-      result = {text = t1[i]}
+      result[#result+1] = {text = t1[i]}
     else
       local start = (diffs[i-1] or 0) + 1
-      local stop  = (diffs[i+1] or #t2) - 1
+      local stop  = (diffs[i+1] or (#t2 + 1)) - 1
       print(start, stop)
+      result[#result+1] = {text=t1[i], components = get_table_part(t2, start, stop)}
     end
   end
+  return result
 end
 
-
-
-get_diff(t1,t2)
+for k, v in ipairs(get_diff(t1,t2)) do
+  print(v.text, table.concat((v.components or {}), " "))
+end
 
 
 
