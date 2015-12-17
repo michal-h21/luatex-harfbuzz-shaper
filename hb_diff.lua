@@ -1,5 +1,3 @@
-local t1 = {"g","r","a","f_i","k","a", "f_i"}
-local t2 = {"g","r","a","f","i","k","a", "f", "i"}
 
 -- get 
 local function compute_diff(t1,t2)
@@ -47,10 +45,7 @@ local function get_diff(t1,t2)
   return result
 end
 
-for k, v in ipairs(get_diff(t1,t2)) do
-  print(v.text, table.concat((v.components or {}), " "))
-end
-
+return get_diff
 
 
 

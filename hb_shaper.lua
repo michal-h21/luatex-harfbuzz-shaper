@@ -1,5 +1,6 @@
 local M =  {}
 local harfbuzz = require "harfbuzz"
+local diff = require "hb_diff"
 local Buffer = harfbuzz.Buffer
 local usedfonts = {}
 
@@ -166,6 +167,58 @@ local function shape(text,fontoptions, dir, size)
   -- return {harfbuzz._shape(text,specification.data, 0,  script, direction, lang, size, features)}
   return buffer:get_glyph_infos_and_positions(), newdir
 end
+
+
+local function handle_ligatures(nodetable, text, fontoptions, dir, size)
+  local docoption = fontoptions.options or {}
+  local ligatable = fontoptions.options.ligatable or {}
+  local unprocessed  = 0
+  local find_components = function()
+    -- we must save features, 
+    local saved_features = docoption.features
+    -- add features to feature list
+    local new_features = table.concat({(saved_features or ""), "-liga;-clig;-hlig;-dlig;-rlig"}, ";")
+    docoption.features = new_features
+    local new_nodes = shape(text, fontoptions, dir, size)
+    -- and restore them later, we don't want to disable ligatures in the document
+    docoption.features = saved_features
+    -- we must create tables for shaped text with and without ligatures
+    local new_chars = {}
+    local old_chars = {}
+    for k,v in ipairs(new_nodes) do 
+      local c = fontoptions.backmap[v.codepoint]
+      new_chars[#new_chars + 1] = c
+    end
+    for k,v in ipairs(nodetable) do old_chars[#old_chars + 1] = v.char end
+    local diffed = diff(old_chars, new_chars)
+    for k,v in ipairs(diffed) do
+      local c = v.text
+      local components = v.components or false
+      ligatable[c] = components
+    end
+  end
+  local insert_ligacomponents = function(x)
+    local components = ligatable[x]
+    print("inserting comonents", table.concat(components, " "))
+    return x
+  end
+  for _, x in ipairs(nodetable) do
+    local c = x.char
+    -- glyph which haven!t been saved in ligatable yet, we need to rebuild the whole string
+    if ligatable[x] == nil then
+      unprocessed = unprocessed + 1
+    elseif ligatable[x] ~= false then
+      x = insert_ligacomponents(x)
+    end
+  end
+  if unprocessed > 0 then
+    find_components()
+    return handle_ligatures(nodetable, text, fontoptions, dir, size)
+  end
+  return nodetable
+end
+ 
+
   -- nodeoptions are options for glyph nodes
 -- options are for harfbuzz
 M.make_nodes = function(text, nodeoptions, options)
@@ -217,6 +270,7 @@ M.make_nodes = function(text, nodeoptions, options)
     -- we skip this for top to bottom direction
     nodetable = get_kern(nodetable, n, calc_dim)
   end--]]
+  nodetable = handle_ligatures(nodetable, text, fontoptions, direction, size)
   return nodetable
 end
 
