@@ -198,23 +198,52 @@ local function handle_ligatures(nodetable, text, fontoptions, dir, size)
     end
   end
   local insert_ligacomponents = function(x)
-    local components = ligatable[x]
+    x.subtype = 1
+    local head, prev
+    local components = ligatable[x.char]
+    for _, component in ipairs(components) do
+      local n = node.new "glyph"
+      n.char = component
+      n.font = x.font
+      n.lang = x.lang
+      n.uchyph = x.uchyph
+      n.left = x.left
+      n.right = x.right
+      n.attr = x.attr
+      n.subtype = 1
+      if not head then 
+        head = n
+      else
+        node.insert_after(head, prev, n)
+      end
+      prev = n
+    end
+    x.components = head
     print("inserting comonents", table.concat(components, " "))
+    for j in node.traverse(x.components) do
+      print(j.char)
+    end
     return x
   end
   for _, x in ipairs(nodetable) do
     local c = x.char
-    -- glyph which haven!t been saved in ligatable yet, we need to rebuild the whole string
-    if ligatable[x] == nil then
-      unprocessed = unprocessed + 1
-    elseif ligatable[x] ~= false then
-      x = insert_ligacomponents(x)
+    if c then
+      -- glyph which haven!t been saved in ligatable yet, we need to rebuild the whole string
+      if ligatable[c] == nil then
+        print("liga unproc", c)
+        unprocessed = unprocessed + 1
+      elseif ligatable[c] ~= false then
+        print("ligatur?",c)
+        x = insert_ligacomponents(x)
+      end
     end
   end
   if unprocessed > 0 then
     find_components()
+    fontoptions.options.ligatable = ligatable 
     return handle_ligatures(nodetable, text, fontoptions, dir, size)
   end
+  fontoptions.options.ligatable = ligatable 
   return nodetable
 end
  
@@ -337,8 +366,12 @@ M.process_nodes = function(head,groupcode)
       local options = M.get_font(current_font).options
       options.direction = convert_dir(direction)
       local nodeoptions = {
+        uchyph = current_text.uchyph,
+        left = current_text.left,
+        right = current_text.right,
         font = current_font, 
         lang= current_text.lang, 
+        attr = current_text.attr,
         subtype= 1
       }
       local newtext = M.make_nodes(text,nodeoptions ,options)
@@ -356,12 +389,15 @@ M.process_nodes = function(head,groupcode)
         -- test for hypothetical situation that in list of succeeding glyphs
         -- are some glyphs with different font and lang
         -- can this even happen?
-        if n.lang == current_text.lang and n.font == current_text.font and n.attribute == current_text.attribute then
+        if n.lang == current_text.lang and n.font == current_text.font and n.attr == current_text.attr then
         else
           build_text()
           current_text.font = n.font
           current_text.lang = n.lang
-          current_text.attribute = n.attribute
+          current_text.attr = n.attr
+          current_text.left = n.left
+          current_text.right = n.right
+          current_text.uchyph = n.uchyph
         end
         current_text[#current_text + 1] = utfchar(n.char)
       else
@@ -426,6 +462,9 @@ M.process_nodes = function(head,groupcode)
     newhead = process_newhead(newhead_table)
     lang.hyphenate(newhead)
     node.kerning(newhead)
+    for x in node.traverse(newhead) do
+      print(x.id, x.subtype, utfchar(x.char or 32))
+    end
     -- node.flush_list(head)
     -- print "return newhead"
     return newhead
