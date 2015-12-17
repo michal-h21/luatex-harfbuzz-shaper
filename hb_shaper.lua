@@ -230,10 +230,8 @@ local function handle_ligatures(nodetable, text, fontoptions, dir, size)
     if c then
       -- glyph which haven!t been saved in ligatable yet, we need to rebuild the whole string
       if ligatable[c] == nil then
-        print("liga unproc", c)
         unprocessed = unprocessed + 1
       elseif ligatable[c] ~= false then
-        print("ligatur?",c)
         x = insert_ligacomponents(x)
       end
     end
@@ -462,9 +460,6 @@ M.process_nodes = function(head,groupcode)
     newhead = process_newhead(newhead_table)
     lang.hyphenate(newhead)
     node.kerning(newhead)
-    for x in node.traverse(newhead) do
-      print(x.id, x.subtype, utfchar(x.char or 32))
-    end
     -- node.flush_list(head)
     -- print "return newhead"
     return newhead
