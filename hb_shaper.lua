@@ -175,7 +175,7 @@ local gpos = unicode.grapheme.sub
 -- function reshape is called only when a word contains some glyph unsupported by a font
 -- we will make graphemes, test each for shapping support, join graphemes with the same category
 -- (shaped/unshaped) and shape them separatelly
-local function reshape(text, nodeoptions, options,fontoptions)
+local function reshape(text, nodeoptions, options,fontoptions, shape_count)
   local function make_graphemes(text)
     local t = {}
     for i = 1, glen(text) do
@@ -238,28 +238,32 @@ local function reshape(text, nodeoptions, options,fontoptions)
     if script then
       newfont = opt[script] or -1
     end
-    print ("Reshaping using ".. (script or "-") .. " font")
+    print ("Reshaping using ".. (script or "-") .. " font: ", newfont)
     local newnodeopts = {}
     for k,v in pairs(nodeoptions) do newnodeopts[k] = v end
     if newfont and newfont > -1 then 
       newnodeopts.font = newfont
     end
-    
-    local curr_nodes =  M.make_nodes(v.text, newnodeopts, options)
+    local curr_nodes =  M.make_nodes(v.text, newnodeopts, options, shape_count)
     for _,y in ipairs(curr_nodes) do newnodes[#newnodes+1] = y end
   end
   if #newnodes>0 then
     return newnodes
   end
   print "No substitute font"
-  return nil
+  return {}
 end
 
 
 
   -- nodeoptions are options for glyph nodes
 -- options are for harfbuzz
-M.make_nodes = function(text, nodeoptions, options)
+M.make_nodes = function(text, nodeoptions, options, shape_count)
+  -- shaping may be called several times in the case os missing glyphs
+  local shape_count = shape_count or 0
+  if shape_count > 1 then 
+    return {} 
+  end
   local nodeoptions = nodeoptions or {}
   local fontid = nodeoptions.font
   local direction = options.direction
@@ -278,7 +282,7 @@ M.make_nodes = function(text, nodeoptions, options)
     -- do reshape if missing glyph is detected. Whole word is reshaped
     if v.codepoint==0 then
       print("Detected missing glyph", text)
-      return reshape(text, nodeoptions, options, fontoptions)
+      return reshape(text, nodeoptions, options, fontoptions, shape_count + 1)
     end
     local n
     local char =  fontoptions.backmap[v.codepoint]
