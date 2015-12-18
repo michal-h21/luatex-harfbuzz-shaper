@@ -251,9 +251,7 @@ local function hyphenate_ligatures(head)
   -- original node list
   for n in node.traverse(head) do
     if n.id == kern_id then
-      print "éééééééééééééé kern"
     elseif n.subtype ~= 3 or n.id ~= glyph_id then
-      print "všecbhnooo"
       local copy = node.copy(n)
       if not newhead then
         newhead = copy 
@@ -261,7 +259,6 @@ local function hyphenate_ligatures(head)
         node.insert_after(newhead, node.tail(newhead), copy)
       end
     else
-      print "liiiiiga"
       for comp in node.traverse(n.components) do
         local x = node.copy(comp) 
         x.subtype = 1
@@ -528,13 +525,6 @@ M.process_nodes = function(head,groupcode)
     -- hyphenation doesn't work also with kern nodes, so use 
     -- hyphenate_ligatures in every case
     newhead = hyphenate_ligatures(newhead)
-    for n in node.traverse(newhead) do
-      print("uff", n.id, n.subtype, utfchar(n.char or 32))
-      if n.id == glyph_id and n.subtype == 3 then
-        ligatured = true
-      else
-      end
-    end
     -- kerning is done by harfbuzz
     -- node.kerning(newhead)
     -- node.flush_list(head)
