@@ -1,5 +1,6 @@
 local M =  {}
 local harfbuzz = require "harfbuzz"
+local diff = require "hb_diff"
 local Buffer = harfbuzz.Buffer
 local usedfonts = {}
 
@@ -256,6 +257,156 @@ end
 
 
 
+
+local function handle_ligatures(nodetable, text, fontoptions, dir, size)
+  local docoption = fontoptions.options or {}
+  local ligatable = fontoptions.options.ligatable or {}
+  local unprocessed  = 0
+  local find_components = function()
+    -- we must save features, 
+    local saved_features = docoption.features
+    -- add features to feature list
+    -- disable ligatures
+    local new_features = table.concat({(saved_features or ""), "-liga;-clig;-hlig;-dlig;-rlig"}, ";")
+    docoption.features = new_features
+    -- get new glyph list without ligatures
+    local new_nodes = shape(text, fontoptions, dir, size)
+    -- and restore features later, we don't want to disable ligatures in the document
+    docoption.features = saved_features
+    -- we must create tables for shaped text with and without ligatures
+    local new_chars = {}
+    local old_chars = {}
+    -- process glyph list for characters
+    for k,v in ipairs(new_nodes) do 
+      local c = fontoptions.backmap[v.codepoint]
+      new_chars[#new_chars + 1] = c
+    end
+    -- make character table for the node list with ligatures
+    for k,v in ipairs(nodetable) do old_chars[#old_chars + 1] = v.char end
+    -- make difference table between two character tables
+    -- diff function is saved in hb_diff.lua
+    local diffed = diff(old_chars, new_chars)
+    for k,v in ipairs(diffed) do
+      local c = v.text
+      -- detected ligatures are saved as coomonents field in diffed table
+      local components = v.components or false
+      ligatable[c] = components
+    end
+  end
+  local insert_ligacomponents = function(x)
+    -- insert child nodes for ligatured glyph
+    x.subtype = 3
+    local head, prev
+    -- the component characters are saved in ligatable 
+    local components = ligatable[x.char]
+    for _, component in ipairs(components) do
+      local n = node.new "glyph"
+      n.char = component
+      n.font = x.font
+      n.lang = x.lang
+      n.uchyph = x.uchyph
+      n.left = x.left
+      n.right = x.right
+      n.attr = x.attr
+      n.subtype = 1
+      if not head then 
+        head = n
+      else
+        node.insert_after(head, prev, n)
+      end
+      prev = n
+    end
+    x.components = head
+    return x
+  end
+  -- first detect whether there are any characters which haven't been saved in ligatable yet
+  for _, x in ipairs(nodetable) do
+    local c = x.char
+    if c then -- ignore non glyph nodes
+      -- glyph which haven't been saved in ligatable yet, we need to rebuild the whole string
+      if ligatable[c] == nil then
+        unprocessed = unprocessed + 1
+      elseif ligatable[c] ~= false then
+        x = insert_ligacomponents(x)
+      end
+    end
+  end
+  -- when node list contains characters which haven't been saved to ligatable yet, we need to rebuild it
+  if unprocessed > 0 then
+    find_components()
+    fontoptions.options.ligatable = ligatable 
+    return handle_ligatures(nodetable, text, fontoptions, dir, size)
+  end
+  fontoptions.options.ligatable = ligatable 
+  return nodetable
+end
+
+local function hyphenate_ligatures(head)
+  local glyphpos = 0
+  local newhead, prev 
+  local discretionaries = {}
+  -- we want to hyphenate node lists which contain ligatures
+  -- ligatured words are not hyphenated, we create temporary list with
+  -- decomposed ligatures, hyphenate it, and the insert discretionaries back to 
+  -- original node list
+  for n in node.traverse(head) do
+    -- hyphenation also doesn't work with kerns, so we must ignore them
+    if n.id == kern_id then
+    elseif n.subtype ~= 3 or n.id ~= glyph_id then
+      local copy = node.copy(n)
+      if not newhead then
+        newhead = copy 
+      else
+        node.insert_after(newhead, node.tail(newhead), copy)
+      end
+    else
+      for comp in node.traverse(n.components) do
+        local x = node.copy(comp) 
+        x.subtype = 1
+        if not newhead then 
+          newhead = x
+        else
+          node.insert_after(newhead, node.tail(newhead),x)
+        end
+      end
+    end
+  end
+  -- hyphenate unligatured node list
+  lang.hyphenate(newhead)
+  -- save positions of discretionaries
+  for k in node.traverse(newhead) do
+    if k.id == glyph_id then
+      glyphpos = glyphpos + 1
+    elseif k.id == disc_id then
+      discretionaries[glyphpos] = k 
+    end
+  end
+  glyphpos = 0
+  local advance_glyphpos = function(n)
+    -- test for discretionary on current glyph pos
+    local d = discretionaries[glyphpos]
+    if d then
+      node.insert_before(head, n, d)
+    end
+    glyphpos = glyphpos + 1
+  end
+  -- insert discretionaries into the original list
+  for n in node.traverse(head) do
+    if n.id == glyph_id then
+      -- count glyph nodes
+      if n.subtype==3 then
+        for j in node.traverse(n.components) do
+          advance_glyphpos(n)
+        end
+      else
+          advance_glyphpos(n)
+      end
+    end
+  end
+  return head
+end
+ 
+
   -- nodeoptions are options for glyph nodes
 -- options are for harfbuzz
 M.make_nodes = function(text, nodeoptions, options, shape_count)
@@ -312,6 +463,7 @@ M.make_nodes = function(text, nodeoptions, options, shape_count)
     -- we skip this for top to bottom direction
     nodetable = get_kern(nodetable, n, calc_dim)
   end--]]
+  nodetable = handle_ligatures(nodetable, text, fontoptions, direction, size)
   return nodetable
 end
 
@@ -378,8 +530,12 @@ M.process_nodes = function(head,groupcode)
       local options = M.get_font(current_font).options
       options.direction = convert_dir(direction)
       local nodeoptions = {
+        uchyph = current_text.uchyph,
+        left = current_text.left,
+        right = current_text.right,
         font = current_font, 
         lang= current_text.lang, 
+        attr = current_text.attr,
         subtype= 1
       }
       local newtext = M.make_nodes(text,nodeoptions ,options)
@@ -397,12 +553,17 @@ M.process_nodes = function(head,groupcode)
         -- test for hypothetical situation that in list of succeeding glyphs
         -- are some glyphs with different font and lang
         -- can this even happen?
-        if n.lang == current_text.lang and n.font == current_text.font and n.attribute == current_text.attribute then
+        if n.lang == current_text.lang and n.font == current_text.font and n.attr == current_text.attr then
         else
           build_text()
           current_text.font = n.font
           current_text.lang = n.lang
-          current_text.attribute = n.attribute
+          current_text.attr = n.attr
+          current_text.left = n.left
+          current_text.right = n.right
+          current_text.uchyph = n.uchyph
+          -- we should save individual expansion_factors
+          current_text.expansion_factor = n.expansion_factor
         end
         current_text[#current_text + 1] = utfchar(n.char)
       else
@@ -465,8 +626,13 @@ M.process_nodes = function(head,groupcode)
     -- we don't need first node anymore
     -- table.remove(newhead_table,1)
     newhead = process_newhead(newhead_table)
-    lang.hyphenate(newhead)
-    node.kerning(newhead)
+    local ligatured = false
+    -- lang.hyphenate(newhead)
+    -- hyphenation doesn't work also with kern nodes, so use 
+    -- hyphenate_ligatures in every case
+    newhead = hyphenate_ligatures(newhead)
+    -- kerning is done by harfbuzz
+    -- node.kerning(newhead)
     -- node.flush_list(head)
     -- print "return newhead"
     return newhead
