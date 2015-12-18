@@ -262,7 +262,8 @@ local function hyphenate_ligatures(head)
   -- original node list
   for n in node.traverse(head) do
     -- hyphenation also doesn't work with kerns, so we must ignore them
-    if n.id == kern_id then
+    -- but only kerns with subtype 0, which comes from font kerning
+    if n.id == kern_id and n.subtype == 0then
     elseif n.subtype ~= 3 or n.id ~= glyph_id then
       local copy = node.copy(n)
       if not newhead then
