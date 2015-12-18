@@ -198,7 +198,7 @@ local function handle_ligatures(nodetable, text, fontoptions, dir, size)
     end
   end
   local insert_ligacomponents = function(x)
-    x.subtype = 1
+    x.subtype = 3
     local head, prev
     local components = ligatable[x.char]
     for _, component in ipairs(components) do
@@ -219,10 +219,6 @@ local function handle_ligatures(nodetable, text, fontoptions, dir, size)
       prev = n
     end
     x.components = head
-    print("inserting comonents", table.concat(components, " "))
-    for j in node.traverse(x.components) do
-      print(j.char)
-    end
     return x
   end
   for _, x in ipairs(nodetable) do
@@ -243,6 +239,73 @@ local function handle_ligatures(nodetable, text, fontoptions, dir, size)
   end
   fontoptions.options.ligatable = ligatable 
   return nodetable
+end
+
+local function hyphenate_ligatures(head)
+  local glyphpos = 0
+  local newhead, prev 
+  local discretionaries = {}
+  -- we want to hyphenate node lists which contain ligatures
+  -- ligatured words are not hyphenated, we create temporary list with
+  -- decomposed ligatures, hyphenate it, and the insert discretionaries back to 
+  -- original node list
+  for n in node.traverse(head) do
+    if n.id == kern_id then
+      print "éééééééééééééé kern"
+    elseif n.subtype ~= 3 or n.id ~= glyph_id then
+      print "všecbhnooo"
+      local copy = node.copy(n)
+      if not newhead then
+        newhead = copy 
+      else
+        node.insert_after(newhead, node.tail(newhead), copy)
+      end
+    else
+      print "liiiiiga"
+      for comp in node.traverse(n.components) do
+        local x = node.copy(comp) 
+        x.subtype = 1
+        if not newhead then 
+          newhead = x
+        else
+          node.insert_after(newhead, node.tail(newhead),x)
+        end
+      end
+    end
+  end
+  -- hyphenate unligatured node list
+  lang.hyphenate(newhead)
+  -- save positions of discretionaries
+  for k in node.traverse(newhead) do
+    if k.id == glyph_id then
+      glyphpos = glyphpos + 1
+    elseif k.id == disc_id then
+      discretionaries[glyphpos] = k 
+    end
+  end
+  -- insert discretionaries into original list
+  glyphpos = 0
+  local advance_glyphpos = function(n)
+    -- test for discretionary on current glyph pos
+    local d = discretionaries[glyphpos]
+    if d then
+      node.insert_before(head, n, d)
+    end
+    glyphpos = glyphpos + 1
+  end
+  for n in node.traverse(head) do
+    if n.id == glyph_id then
+      -- count glyph nodes
+      if n.subtype==3 then
+        for j in node.traverse(n.components) do
+          advance_glyphpos(n)
+        end
+      else
+          advance_glyphpos(n)
+      end
+    end
+  end
+  return head
 end
  
 
@@ -396,6 +459,8 @@ M.process_nodes = function(head,groupcode)
           current_text.left = n.left
           current_text.right = n.right
           current_text.uchyph = n.uchyph
+          -- we should save individual expansion_factors
+          current_text.expansion_factor = n.expansion_factor
         end
         current_text[#current_text + 1] = utfchar(n.char)
       else
@@ -458,8 +523,20 @@ M.process_nodes = function(head,groupcode)
     -- we don't need first node anymore
     -- table.remove(newhead_table,1)
     newhead = process_newhead(newhead_table)
-    lang.hyphenate(newhead)
-    node.kerning(newhead)
+    local ligatured = false
+    -- lang.hyphenate(newhead)
+    -- hyphenation doesn't work also with kern nodes, so use 
+    -- hyphenate_ligatures in every case
+    newhead = hyphenate_ligatures(newhead)
+    for n in node.traverse(newhead) do
+      print("uff", n.id, n.subtype, utfchar(n.char or 32))
+      if n.id == glyph_id and n.subtype == 3 then
+        ligatured = true
+      else
+      end
+    end
+    -- kerning is done by harfbuzz
+    -- node.kerning(newhead)
     -- node.flush_list(head)
     -- print "return newhead"
     return newhead
