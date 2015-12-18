@@ -177,29 +177,38 @@ local function handle_ligatures(nodetable, text, fontoptions, dir, size)
     -- we must save features, 
     local saved_features = docoption.features
     -- add features to feature list
+    -- disable ligatures
     local new_features = table.concat({(saved_features or ""), "-liga;-clig;-hlig;-dlig;-rlig"}, ";")
     docoption.features = new_features
+    -- get new glyph list without ligatures
     local new_nodes = shape(text, fontoptions, dir, size)
-    -- and restore them later, we don't want to disable ligatures in the document
+    -- and restore features later, we don't want to disable ligatures in the document
     docoption.features = saved_features
     -- we must create tables for shaped text with and without ligatures
     local new_chars = {}
     local old_chars = {}
+    -- process glyph list for characters
     for k,v in ipairs(new_nodes) do 
       local c = fontoptions.backmap[v.codepoint]
       new_chars[#new_chars + 1] = c
     end
+    -- make character table for the node list with ligatures
     for k,v in ipairs(nodetable) do old_chars[#old_chars + 1] = v.char end
+    -- make difference table between two character tables
+    -- diff function is saved in hb_diff.lua
     local diffed = diff(old_chars, new_chars)
     for k,v in ipairs(diffed) do
       local c = v.text
+      -- detected ligatures are saved as coomonents field in diffed table
       local components = v.components or false
       ligatable[c] = components
     end
   end
   local insert_ligacomponents = function(x)
+    -- insert child nodes for ligatured glyph
     x.subtype = 3
     local head, prev
+    -- the component characters are saved in ligatable 
     local components = ligatable[x.char]
     for _, component in ipairs(components) do
       local n = node.new "glyph"
@@ -221,10 +230,11 @@ local function handle_ligatures(nodetable, text, fontoptions, dir, size)
     x.components = head
     return x
   end
+  -- first detect whether there are any characters which haven't been saved in ligatable yet
   for _, x in ipairs(nodetable) do
     local c = x.char
-    if c then
-      -- glyph which haven!t been saved in ligatable yet, we need to rebuild the whole string
+    if c then -- ignore non glyph nodes
+      -- glyph which haven't been saved in ligatable yet, we need to rebuild the whole string
       if ligatable[c] == nil then
         unprocessed = unprocessed + 1
       elseif ligatable[c] ~= false then
@@ -232,6 +242,7 @@ local function handle_ligatures(nodetable, text, fontoptions, dir, size)
       end
     end
   end
+  -- when node list contains characters which haven't been saved to ligatable yet, we need to rebuild it
   if unprocessed > 0 then
     find_components()
     fontoptions.options.ligatable = ligatable 
@@ -250,6 +261,7 @@ local function hyphenate_ligatures(head)
   -- decomposed ligatures, hyphenate it, and the insert discretionaries back to 
   -- original node list
   for n in node.traverse(head) do
+    -- hyphenation also doesn't work with kerns, so we must ignore them
     if n.id == kern_id then
     elseif n.subtype ~= 3 or n.id ~= glyph_id then
       local copy = node.copy(n)
@@ -280,7 +292,6 @@ local function hyphenate_ligatures(head)
       discretionaries[glyphpos] = k 
     end
   end
-  -- insert discretionaries into original list
   glyphpos = 0
   local advance_glyphpos = function(n)
     -- test for discretionary on current glyph pos
@@ -290,6 +301,7 @@ local function hyphenate_ligatures(head)
     end
     glyphpos = glyphpos + 1
   end
+  -- insert discretionaries into the original list
   for n in node.traverse(head) do
     if n.id == glyph_id then
       -- count glyph nodes
