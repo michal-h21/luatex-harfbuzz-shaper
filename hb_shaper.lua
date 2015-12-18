@@ -263,7 +263,7 @@ local function hyphenate_ligatures(head)
   for n in node.traverse(head) do
     -- hyphenation also doesn't work with kerns, so we must ignore them
     -- but only kerns with subtype 0, which comes from font kerning
-    if n.id == kern_id and n.subtype == 0then
+    if n.id == kern_id and n.subtype == 0 then
     elseif n.subtype ~= 3 or n.id ~= glyph_id then
       local copy = node.copy(n)
       if not newhead then
@@ -290,9 +290,11 @@ local function hyphenate_ligatures(head)
     if k.id == glyph_id then
       glyphpos = glyphpos + 1
     elseif k.id == disc_id then
-      discretionaries[glyphpos] = k 
+      discretionaries[glyphpos] = node.copy(k) 
     end
   end
+  -- free the memory
+  node.flush_list(newhead)
   glyphpos = 0
   local advance_glyphpos = function(n)
     -- test for discretionary on current glyph pos
