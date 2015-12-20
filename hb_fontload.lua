@@ -6,6 +6,17 @@ local find_font = require "hb_findfont"
 local hb = require "harfbuzz"
 local Face = hb.Face
 local Font = hb.Font
+
+local face_cache = {}
+local function get_face(fullpath)
+  local saved = face_cache[fullpath] or {}
+  local face = saved.face or Face.new(fullpath)
+  local font = saved.font or Font.new(face)
+  face_cache[fullpath] = {face = face, font = font}
+  return face, font
+end
+
+
 -- set default parameters for tfm or vf fonts
 local tfm_font_parameters = function(tfmdata)
   -- support for microtype
@@ -63,8 +74,9 @@ function M.loader(specification, size)
       f.psname = f.name
       f.spec = spec
       if spec.fullpath then
-        f.face = Face.new(spec.fullpath)
-        f.hb_font = Font.new(f.face)
+        -- f.face = Face.new(spec.fullpath)
+        -- f.hb_font = Font.new(f.face)
+        f.face, f.hb_font = get_face(spec.fullpath)
       end
       f.options = options
       f.fullname = ttffont.names[1].names.fullname
