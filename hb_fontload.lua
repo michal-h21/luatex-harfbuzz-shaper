@@ -67,8 +67,9 @@ function M.loader(specification, size)
     if size < 0 then
       size = (- 655.36) * size
     end
-    ttffont = fontloader.to_table(fontloader.open(filename))
-    if ttffont then
+    local fontfile = fontloader.open(filename)
+    if fontfile then
+      local ttffont = fontloader.to_table(fontfile)
       f = { }
       f.name = ttffont.fontname
       f.psname = f.name
@@ -141,6 +142,7 @@ function M.loader(specification, size)
         supplement = 0,
         version = 1 
       }
+      fontloader.close(fontfile)
     end
   else
     -- this can't happen in reality, because some OpenType font is always
