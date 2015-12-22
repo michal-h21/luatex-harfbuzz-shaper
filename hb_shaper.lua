@@ -147,7 +147,7 @@ local function shape(text,fontoptions, dir, size)
     elseif v==false then 
       table.insert(f, "-"..k)
       -- we must remove script and language, they aren't valid features
-    elseif k=="script" or k=="language" then
+    elseif k=="script" or k=="language" or k=="featurefile" then
     else
       table.insert(f, string.format("+%s=%s",k,v))
     end
