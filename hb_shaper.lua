@@ -1,4 +1,5 @@
 local M =  {}
+M.loglevel = 0
 local harfbuzz = require "harfbuzz"
 local diff = require "hb_diff"
 local Buffer = harfbuzz.Buffer
@@ -11,7 +12,6 @@ local hb_attr = luatexbase.registernumber("harfbuzzenabled")
 local hb_enabled = 1
 local hb_disabled = 0
 
-print("harfbuzz attr no", hb_attr)
 
 M.options = {font =  "TeX Gyre Termes", weight = 200,script = "", direction = "LTR", language = "en", size = 10, features = "+liga", variant = "normal"}
 
@@ -34,6 +34,20 @@ local utfchar =  function(x)
   end
 end
 
+local function debug(level, fn)
+  if M.loglevel >= level then
+    fn()
+  end
+end
+
+local function log(format, ...)
+  local args = table.pack(...)
+  debug(1, function()
+    print(string.format(format, table.unpack(args)))
+  end)
+end
+
+log("harfbuzz attr no: %i", hb_attr)
 -- helper function to get font options and font face
 M.get_font = function(fontid)
   local fontoptions = usedfonts[fontid] or font.fonts[fontid] or {}
@@ -79,27 +93,31 @@ local kernfn = {
   ltr = function(nodetable, n, calcfield)
     local x_advance = calcfield "x_advance"
     if x_advance and math.abs(x_advance - n.width) > 1 then
-      local char = utfchar(n.char)
       local kern = node.new "kern"
       -- this formula is good for latin text, but what about TRL
       kern.kern = (x_advance - n.width  ) 
       -- really this? I am not sure why
       nodetable[#nodetable+1] = kern
-      print("kern", char, n.width, x_advance)
+      debug(1,function()
+        local char = utfchar(n.char)
+        log("kern \t%s\t%i\t%i", char, n.width, x_advance)
+      end)
     end
     return nodetable
   end,
   rtl = function(nodetable, n, calcfield)    
     local x_advance = calcfield "x_advance"
     if x_advance and math.abs(x_advance - n.width) > 1 then
-      local char = utfchar(n.char)
       local kern = node.new "kern"
       kern.kern = (n.width - x_advance) * -1
       -- it seems that kerns are inserted wrongly for RTL, we must fix it
       local pos = #nodetable --- 1
       if pos < 1 then pos = 1 end
       table.insert(nodetable,pos, kern)
-      print("kern", char, n.width, x_advance)
+      debug(1,function()
+        local char = utfchar(n.char)
+        log("kern \t%s\t%i\t%i", char, n.width, x_advance)
+      end)
     end
     return nodetable
   end,
@@ -109,7 +127,6 @@ local kernfn = {
     -- local x_advance = calcfield "x_advance"
     local y_advance = calcfield "y_advance"
     local total  = ((n.height + n.depth) + y_advance) -- * -1
-    local char = utfchar(n.char)
     local glue = node.new "glue"
     local gs = node.new "glue_spec"
     gs.width = total
@@ -120,7 +137,10 @@ local kernfn = {
     glue.spec = gs
     local kern = node.new "kern"
     kern.kern = total * -1
-    print(char, n.width,  n.height, n.depth,  y_advance, total)
+    debug(1,function()
+      local char = utfchar(n.char)
+      log("kern \t%s\t%i\t%i\t%i", char, n.width, x_advance, total)
+    end)
     nodetable[#nodetable+1] = glue
     -- nodetable[#nodetable+1] = kern
     return nodetable
@@ -156,12 +176,20 @@ local function shape(text,fontoptions, dir, size)
   local doc_feat = parse_features(docoptions.features)
   local features = table.concat(f, ",") .. ","..doc_feat
   local buffer = Buffer.new()
-  buffer:add_utf8(text)
+  -- buffer:add_utf8(text)
+  -- we got segfault when we tried to use directly text table 
+  local t = {}
+  for i=1, #text do t[#t+1] = text[i] end
+  buffer:add_codepoints(t)
   local Font = fontoptions.hb_font
   local options = {script = script, language = language, direction = direction, features = features}
   harfbuzz.shape(Font, buffer, options)
   local newdir = buffer:get_direction()
-  print(text, script, newdir, lang, features)
+  debug(1, function()
+    local x = {}
+    for i = 1,#text do x[#x+1] = utfchar(text[i]) end
+    log("%s\t%s\t%s\t%s\t%s", table.concat(x), script, newdir, lang, features)
+  end)
   if newdir == "rtl" or  newdir == "RTL" then
     buffer:reverse()
   end
@@ -524,7 +552,8 @@ M.process_nodes = function(head,groupcode)
   -- end
   local build_text = function() 
     if #current_text > 0 then
-      local text = table.concat(current_text)
+      -- local text = table.concat(current_text)
+      local text = current_text
     -- print("callback text",text)
     -- reset current_text
       --table.insert(newhead_table, M.make_nodes(text, current_text.font, current_text.lang,M.options))
@@ -568,7 +597,7 @@ M.process_nodes = function(head,groupcode)
           -- we should save individual expansion_factors
           current_text.expansion_factor = n.expansion_factor
         end
-        current_text[#current_text + 1] = utfchar(n.char)
+        current_text[#current_text + 1] = n.char --utfchar(n.char)
       else
         build_text()
         insert_node(n)

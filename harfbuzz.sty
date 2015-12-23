@@ -1,5 +1,5 @@
 \ProvidesPackage{harfbuzz}
-\RequirePackage{luacode,luatexbase}
+\RequirePackage{luacode,luatexbase,kvoptions}
 
 % use fontspec encoding for LuaLaTeX
 % This may be needed 
@@ -93,4 +93,11 @@
   \renewcommand{\ttdefault}{hbtt}
 }
 
+\DeclareStringOption[0]{debug}[1]
+
+\ProcessKeyvalOptions*
+
+\luaexec{%
+  luaharfbuzz.loglevel = tonumber("\luaescapestring{\harfbuzz@debug}")
+}
 \endinput
