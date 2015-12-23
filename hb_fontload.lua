@@ -97,12 +97,13 @@ function M.loader(specification, size)
       f.units_per_em = ttffont.units_per_em
       -- local utfchar = unicode.utf8.char
       local names_of_char = { }
-      for char, glyph in pairs(ttffont.map.map) do
-        if ttffont.glyphs[glyph] then
-          names_of_char[ttffont.glyphs[glyph].name] = ttffont.map.backmap[glyph]
-        end
-        -- print(glyph,ttffont.glyphs[glyph].name,utfchar(ttffont.map.backmap[glyph]))
-      end
+      -- this was used only for kerning
+      -- for char, glyph in pairs(ttffont.map.map) do
+      --   if ttffont.glyphs[glyph] then
+      --     names_of_char[ttffont.glyphs[glyph].name] = ttffont.map.backmap[glyph]
+      --   end
+      --   -- print(glyph,ttffont.glyphs[glyph].name,utfchar(ttffont.map.backmap[glyph]))
+      -- end
       -- save backmap in TeX font, so we can get char code from glyph index
       -- obtainded from Harfbuzz
       f.backmap = ttffont.map.backmap
@@ -124,13 +125,14 @@ function M.loader(specification, size)
         if glyph_table.boundingbox[2] then
           f.characters[char].depth = -glyph_table.boundingbox[2] * mag
         end
-        if glyph_table.kerns then
-          local kerns = { }
-          for _, kern in pairs(glyph_table.kerns) do
-            kerns[names_of_char[kern.char]] = kern.off * mag
-          end
-          f.characters[char].kerns = kerns
-        end
+        -- kerning is done by Harfbuzz, so we don't really need this
+        -- if glyph_table.kerns then
+        --   local kerns = { }
+        --   for _, kern in pairs(glyph_table.kerns) do
+        --     kerns[names_of_char[kern.char]] = kern.off * mag
+        --   end
+        --   f.characters[char].kerns = kerns
+        -- end
       end
       f.filename = filename
       f.type = "real"
