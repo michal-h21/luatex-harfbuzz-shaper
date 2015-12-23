@@ -11,7 +11,6 @@ local hb_attr = luatexbase.registernumber("harfbuzzenabled")
 local hb_enabled = 1
 local hb_disabled = 0
 
-print("harfbuzz attr no", hb_attr)
 
 M.options = {font =  "TeX Gyre Termes", weight = 200,script = "", direction = "LTR", language = "en", size = 10, features = "+liga", variant = "normal"}
 
@@ -47,6 +46,7 @@ local function log(format, ...)
   end)
 end
 
+log("harfbuzz attr no: %i", hb_attr)
 -- helper function to get font options and font face
 M.get_font = function(fontid)
   local fontoptions = usedfonts[fontid] or font.fonts[fontid] or {}
@@ -183,7 +183,11 @@ local function shape(text,fontoptions, dir, size)
   local options = {script = script, language = language, direction = direction, features = features}
   harfbuzz.shape(Font, buffer, options)
   local newdir = buffer:get_direction()
-  print(text, script, newdir, lang, features)
+  debug(1, function()
+    local x = {}
+    for i = 1,#text do x[#x+1] = utfchar(text[i]) end
+    log("%s\t%s\t%s\t%s\t%s", table.concat(x), script, newdir, lang, features)
+  end)
   if newdir == "rtl" or  newdir == "RTL" then
     buffer:reverse()
   end
