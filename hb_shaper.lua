@@ -26,6 +26,7 @@ local penalty_id = node.id "penalty"
 
 local max_char = 0x10FFFF
 local utfchar =  function(x)
+  local x = x or 0
   -- print(x)
   if x <= max_char then
     return unicode.utf8.char(x) or x
@@ -147,6 +148,12 @@ local kernfn = {
   end
 }
 
+local function make_text(text)
+  if type(text) == "string" then return text end
+  local t = {}
+  for i=1, #text do t[#t+1] = utfchar(text[i]) end
+  return table.concat(t)
+end
 
 local function shape(text,fontoptions, dir, size)
   local specification = fontoptions.spec
@@ -176,11 +183,14 @@ local function shape(text,fontoptions, dir, size)
   local doc_feat = parse_features(docoptions.features)
   local features = table.concat(f, ",") .. ","..doc_feat
   local buffer = Buffer.new()
-  -- buffer:add_utf8(text)
-  -- we got segfault when we tried to use directly text table 
-  local t = {}
-  for i=1, #text do t[#t+1] = text[i] end
-  buffer:add_codepoints(t)
+  if type(text)== "string" then
+    buffer:add_utf8(text)
+  else
+    -- we got segfault when we tried to use directly text table 
+    local t = {}
+    for i=1, #text do t[#t+1] = text[i] end
+    buffer:add_codepoints(t)
+  end
   local Font = fontoptions.hb_font
   local options = {script = script, language = language, direction = direction, features = features}
   harfbuzz.shape(Font, buffer, options)
@@ -204,7 +214,8 @@ local gpos = unicode.grapheme.sub
 -- function reshape is called only when a word contains some glyph unsupported by a font
 -- we will make graphemes, test each for shapping support, join graphemes with the same category
 -- (shaped/unshaped) and shape them separatelly
-local function reshape(text, nodeoptions, options,fontoptions, shape_count)
+local function reshape(chars, nodeoptions, options,fontoptions, shape_count)
+  local text = make_text(chars)
   local function make_graphemes(text)
     local t = {}
     for i = 1, glen(text) do
@@ -255,6 +266,8 @@ local function reshape(text, nodeoptions, options,fontoptions, shape_count)
     results[#results+1] = new
     return join_scripts(shapes, results, i)
   end
+  -- we must create character table
+  -- text is now real text
   -- get table with all graphemes and their scripts
   local shapes = shape_graphemes(make_graphemes(text))
   local segments = join_scripts(shapes)
@@ -286,10 +299,11 @@ end
 
 
 
-local function handle_ligatures(nodetable, text, fontoptions, dir, size)
+local function handle_ligatures(nodetable, chars, fontoptions, dir, size)
   local docoption = fontoptions.options or {}
   local ligatable = fontoptions.options.ligatable or {}
   local unprocessed  = 0
+  local text = make_text(chars)
   local find_components = function()
     -- we must save features, 
     local saved_features = docoption.features
@@ -298,7 +312,7 @@ local function handle_ligatures(nodetable, text, fontoptions, dir, size)
     local new_features = table.concat({(saved_features or ""), "-liga;-clig;-hlig;-dlig;-rlig"}, ";")
     docoption.features = new_features
     -- get new glyph list without ligatures
-    local new_nodes = shape(text, fontoptions, dir, size)
+    local new_nodes = shape(chars, fontoptions, dir, size)
     -- and restore features later, we don't want to disable ligatures in the document
     docoption.features = saved_features
     -- we must create tables for shaped text with and without ligatures
@@ -363,7 +377,7 @@ local function handle_ligatures(nodetable, text, fontoptions, dir, size)
   if unprocessed > 0 then
     find_components()
     fontoptions.options.ligatable = ligatable 
-    return handle_ligatures(nodetable, text, fontoptions, dir, size)
+    return handle_ligatures(nodetable, chars, fontoptions, dir, size)
   end
   fontoptions.options.ligatable = ligatable 
   return nodetable
@@ -463,7 +477,7 @@ M.make_nodes = function(text, nodeoptions, options, shape_count)
   for _, v in ipairs(result) do
     -- do reshape if missing glyph is detected. Whole word is reshaped
     if v.codepoint==0 then
-      print("Detected missing glyph", text)
+      log("Detected missing glyph: %s", make_text(text))
       return reshape(text, nodeoptions, options, fontoptions, shape_count + 1)
     end
     local n
