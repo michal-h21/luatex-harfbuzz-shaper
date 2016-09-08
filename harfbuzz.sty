@@ -11,6 +11,7 @@
   require "hb_lualoader"
   luaharfbuzz = require "hb_shaper"
   local fontloader = require "hb_fontload"
+  luatexbase.reset_callback("define_font")
   luatexbase.add_to_callback("define_font",fontloader.loader, "font loader")
   luatexbase.add_to_callback("pre_linebreak_filter",luaharfbuzz.process_nodes, "harfbuzz")
   luatexbase.add_to_callback("hpack_filter",luaharfbuzz.process_nodes, "harfbuzz_hpack")

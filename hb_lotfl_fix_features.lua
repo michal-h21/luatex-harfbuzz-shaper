@@ -34,12 +34,13 @@ local handlers          = fonts.handlers
 
 local as_script, normalize
 
-if handlers then
-    normalize = handlers.otf.features.normalize
-else
+-- handlers are empty in fact
+-- if handlers then
+--     normalize = handlers.otf.features.normalize
+-- else
     normalize = function () end
     as_script = true
-end
+-- end
 
 
 --HH A bit of tuning for definitions.

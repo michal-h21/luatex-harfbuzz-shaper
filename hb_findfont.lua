@@ -35,6 +35,7 @@ end
 fonts = fonts or {}
 fonts.encodings = fonts.encodings or {}
 fonts.encodings.agl = fonts.encodings.agl or {}
+fonts.handlers  = fonts.handlers or {}
 texio.write, texio.write_nl          = dummy_function, dummy_function                                                                                 
 if kpse.find_file("luaotfload-basics-gen.lua") then
   require "luaotfload-basics-gen"
