@@ -1,0 +1,25 @@
+\documentclass[landscape]{memoir}
+
+\usepackage{harfbuzz}
+% \usepackage{fontspec,polyglossia,url}
+\usepackage{url}
+
+\font\burmeseFamily={Noto Sans Myanmar:+script=mymr;+language=mya} at 12pt
+\font\burmeseFamilyDecom={Noto Sans Myanmar:+script=dflt;+language=dflt} at 12pt
+\newcommand{\burmeseTest}[1]{
+{\burmeseFamily{} #1}
+\hfill
+{\burmeseFamilyDecom{} #1}
+}
+
+\begin{document}
+
+\burmeseTest{င်းကွန်းင်းလောင်းတော်ကြီး}
+
+\bigskip
+\burmeseTest{မ္မတီခေါင်းလောင်းကြီး}
+
+
+\bigskip
+Might be usefull: \url{https://r12a.github.io/pickers/burmese/}
+\end{document}
